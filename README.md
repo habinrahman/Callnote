@@ -1,340 +1,447 @@
 # Callnote
 
-Callnote is a meeting workspace: a library of calls, a player tied to the transcript, structured notes, action items, highlights, search, and a public clip link.
+A meeting workspace for the hour after the call: the recording clock, the line that was said, the decision, the owner, and a link you can send.
 
-There is no account. The seeded meetings are in the repository, so the deployed site works without a session and without an API key.
+[![Live demo](https://img.shields.io/badge/live%20demo-habinrahman.github.io%2FCallnote-1b5648)](https://habinrahman.github.io/Callnote/)
+[![Repository](https://img.shields.io/badge/source-habinrahman%2FCallnote-1c1915)](https://github.com/habinrahman/Callnote)
+[![Next.js](https://img.shields.io/badge/Next.js-15-111111)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6)](https://www.typescriptlang.org/)
+[![Deploy](https://img.shields.io/badge/deploy-GitHub%20Pages-1b5648)](https://github.com/habinrahman/Callnote/blob/master/.github/workflows/pages.yml)
 
-**Live:** https://habinrahman.github.io/Callnote/
+Callnote is a public, account-free demo of that workflow. Seeded meetings ship in the repository. One of them plays a real audio file in time with the transcript. Notes are written into the data, not produced by a model. A second path records the microphone in the browser and keeps that recording on that machine.
 
-**Source:** https://github.com/habinrahman/Callnote
+**Live demo:** https://habinrahman.github.io/Callnote/
 
-![Meeting library](docs/screenshots/library.jpg)
+**Repository:** https://github.com/habinrahman/Callnote
+
+![Northwind renewal: player, transcript, and notes](docs/screenshots/northwind-workspace.jpg)
+
+> Open [Northwind renewal](https://habinrahman.github.io/Callnote/meetings/northwind-renewal/) and press Play. That is the fastest way to see the product.
 
 ## Why Callnote?
 
-The useful part of a meeting is not the recording. It is the moment you can point at, the decision, and the person who owns the next step.
+The useful part of a meeting is the moment you can point at, the decision, and the person who owns the next step.
 
-Callnote is built around that job. You open a finished call, move the clock, read the line that matches, and leave with owners and a link. A second path records the microphone in the browser and files the result locally. That path does not join Zoom, Google Meet, or Teams, and it does not call a model. The assignment allows a stubbed notetaker. Callnote uses that permission and says so in the product.
+Callnote is built around the post-meeting pass. You open a finished call, move the clock, read the matching line, and leave with owners and a link. Calendar connect and a meeting bot are demoed, not integrated. The assignment allows a stubbed notetaker. The product says so on the calendar page and on the capture screen.
 
 ## Product at a glance
 
 ```text
-Meeting → Capture → Transcript → Notes → Actions → Highlights → Search → Share
+Library → Meeting → Transcript → Notes → Actions → Highlights → Search → Clip
 ```
 
-| Step | What you can do now |
+| Step | What works today |
 | --- | --- |
-| Meeting | Open a seeded call from the library, or a browser capture from this machine |
-| Capture | Demo calendar, then a real `MediaRecorder` session. The transcript is a timed script |
-| Transcript | Speaker, timestamp, click to seek, in-transcript filter |
-| Notes | Authored summary, decisions, topics, follow-ups. Templates change the headings |
-| Actions | Owner, due date, checkbox stored in this browser |
-| Highlights | Seeded marks on the public site. New marks stored with the capture |
-| Search | Literal match on titles, notes, actions, and transcript lines |
-| Share | Public clip pages for seeded clips. Captured clips stay in this browser |
+| Library | Five seeded meetings, plus captures stored in this browser |
+| Meeting | Player, speakers, duration, notes, highlights |
+| Transcript | Speaker, time range, active line, click to seek, in-transcript filter |
+| Notes | Authored summary, decisions, topics, follow-ups. A template changes the headings |
+| Actions | Owner, due date, timestamp. The checkbox stays in this browser |
+| Highlights | Seeded marks seek the player. Marks made during capture stay in IndexedDB |
+| Search | Case-insensitive match on titles, notes, actions, and transcript lines |
+| Clip | Four public clip pages. No viewer account |
 
-## Demo
+Capture sits beside that loop. It is a real microphone recording with a scripted transcript, not a bot that joined the call.
 
-Open the live site and use this order. It takes about two minutes. There is no walkthrough video in the repository.
+## Try the live demo
 
-1. [Library](https://habinrahman.github.io/Callnote/). Checkout outage review shows **1 hr** and eight people. Interview loop — Alex Rivera stays on **Processing**.
-2. [Northwind renewal](https://habinrahman.github.io/Callnote/meetings/northwind-renewal/). Press Play. The spoken file is short; the cue map moves the transcript with it. Click a line. Copy link. The URL includes `/Callnote/` and `?t=`.
-3. [Checkout outage review](https://habinrahman.github.io/Callnote/meetings/reliability-review/). Switch the template to **Incident review**. Read customer impact, the deploy freeze, and the owners. This meeting has no audio file. Play moves a silent clock.
-4. [Jonah's renewal decision](https://habinrahman.github.io/Callnote/share/northwind-decision/). A public clip, no login.
-5. [Search](https://habinrahman.github.io/Callnote/search/) for `error budget`.
-6. [Calendar](https://habinrahman.github.io/Callnote/calendar/). Connect is a demo. Start Callnote asks for the microphone and does not call Google or Microsoft.
+About two minutes. No install and no account.
 
-![Northwind workspace](docs/screenshots/northwind-workspace.jpg)
+1. Open the [library](https://habinrahman.github.io/Callnote/). Checkout outage review is **1 hr**. Interview loop — Alex Rivera stays on **Processing**.
+2. Open [Northwind renewal](https://habinrahman.github.io/Callnote/meetings/northwind-renewal/) and press Play. The highlighted transcript row follows the file.
+3. Click a line. The URL gains `?t=`.
+4. Read **Executive summary** and check one action.
+5. Open [Search](https://habinrahman.github.io/Callnote/search/) and type `error budget`.
+6. Open [Jonah's renewal decision](https://habinrahman.github.io/Callnote/share/northwind-decision/).
+7. Open [Checkout outage review](https://habinrahman.github.io/Callnote/meetings/reliability-review/) and switch the template to **Incident review**. Do not expect audio on that meeting.
+
+| Stop | URL |
+| --- | --- |
+| Library | https://habinrahman.github.io/Callnote/ |
+| Calendar | https://habinrahman.github.io/Callnote/calendar/ |
+| Search | https://habinrahman.github.io/Callnote/search/ |
+| Highlights | https://habinrahman.github.io/Callnote/highlights/ |
+| Northwind | https://habinrahman.github.io/Callnote/meetings/northwind-renewal/ |
+| Outage review | https://habinrahman.github.io/Callnote/meetings/reliability-review/ |
+| Public clip | https://habinrahman.github.io/Callnote/share/northwind-decision/ |
+
+<!-- Walkthrough video: when a public Loom (or similar) URL exists, add it here as a markdown link. Do not link docs/demo/callnote-demo.mp4 until that file is actually committed. -->
+
+There is no walkthrough file in this repository. The live path above is the demo.
 
 ## Feature showcase
 
 ### Meeting library
 
-The home page lists seeded meetings and, in this browser, any captures in IndexedDB. A card shows when it happened, how long it ran, who was there, a preview, and how many actions are still open. Alex Rivera is the processing fixture: the card is visible, the transcript is empty, and it never becomes ready.
+The home page lists seeded meetings and, after load, any captures in IndexedDB. A card shows when the meeting happened, how long it ran, who was there, a one-line preview, and how many actions are still open.
 
-![Library on a phone](docs/screenshots/library-mobile.jpg)
+Alex Rivera is the processing fixture. The card is visible. The transcript is empty. It never becomes ready. That is intentional, so the state can be reviewed without trapping a new recording there.
 
-### Meeting workspace
+The sidebar list labeled **Shared with me** is the same seeded meetings again. It is not an inbox and it does not mean someone sent you a meeting.
 
-`/meetings/[id]/` is the review surface. The player, transcript, and notes are one page. On a narrow viewport the transcript stays above the summary.
+![Meeting library](docs/screenshots/library.jpg)
 
-### Playback
+### Synchronized playback
 
-Northwind is the only seeded meeting with audio: `public/audio/northwind-renewal.wav`. The file is concatenated spoken lines, about 108 seconds, not a 14-minute room recording. `lib/audio/northwind-demo.ts` maps each line's meeting timestamp onto a span of that file. Seeking waits until the browser can seek that far, so the clock does not snap back to the start.
+Northwind is the only seeded meeting with audio: [`public/audio/northwind-renewal.wav`](public/audio/northwind-renewal.wav). The file is concatenated spoken lines, about 108 seconds, not a room recording of the full 14-minute meeting. [`lib/audio/northwind-demo.ts`](lib/audio/northwind-demo.ts) maps each line's meeting time onto a span of that file.
 
-Every other seeded meeting has no media. Play runs a timer. Gaps longer than 1.5 seconds are skipped so the transcript keeps advancing. The duration on screen is the meeting's `durationSec`, not `audio.duration`. The waveform is decorative.
+Seeking waits until the browser can seek that far before it assigns `audio.currentTime`. Otherwise Chrome can snap the element back to the start and the transcript follows it.
+
+Every other seeded meeting has no media file. Play runs a timer. Gaps longer than 1.5 seconds are skipped so the transcript keeps moving. The duration on screen is `durationSec` from the meeting, not `audio.duration`. The waveform is decorative. It is not drawn from samples.
 
 ### Transcript
 
-Each line has a speaker, a start, and an end from `layOut` in `lib/seed/build.ts`. The active line is the one that contains the playhead. Clicking a line seeks and writes `?t=` on the URL. Refresh and paste keep that position. The filter is a substring on the lines in view.
+Each line has a speaker, a start, and an end. `layOut` in [`lib/seed/build.ts`](lib/seed/build.ts) estimates spoken time from the word count, then spreads the rest of the meeting across the gaps. The active line is the one that contains the playhead. Clicking a line seeks and writes `?t=` so refresh and paste reopen that moment. The filter is a substring over the lines on the page.
 
 ### Structured notes
 
-Summaries, decisions, topics, actions, and follow-ups are written in `lib/seed/meetings.ts`. Nothing generates them at runtime. They match the transcripts because they were written against them, not because a job checks that.
+Summaries, decisions, topics, actions, moments, and follow-ups are fields on the meeting in [`lib/seed/meetings.ts`](lib/seed/meetings.ts). Nothing generates them at request time. They match the transcripts because they were written against those lines.
+
+![Incident notes on the outage review](docs/screenshots/incident-notes.jpg)
 
 ### Templates
 
-The select is backed by `lib/intelligence/present.ts`. It maps a template id onto a list of sections: prose, decisions, actions, topics, moments, or follow-ups. Some sections show a slice of those arrays (`take` / `skip`).
+The select is driven by [`lib/intelligence/present.ts`](lib/intelligence/present.ts). Five structures change the section headings:
 
-Use **Incident review** on Checkout outage review. That meeting has an incident template, so the summary text changes with the headings: incident summary, customer impact, root cause, timeline, technical signals, mitigations, follow-ups.
+| Structure | Headings |
+| --- | --- |
+| General | Executive summary, Decisions, Action items, Key topics, Follow-ups |
+| Incident review | Incident summary, Customer impact, Root cause, Timeline, Technical signals, Mitigations, Follow-ups |
+| Sales | Executive summary, Customer needs, Pain points, Objections, Opportunities, Next steps |
+| Customer discovery | Customer context, Problems, Current workflow, Pain points, Requirements, Open questions, Follow-ups |
+| Interview | Candidate summary, Experience discussed, Strengths, Concerns, Technical signals, Questions, Recommendation |
 
-On a meeting that does not store the template you picked, the headings still change and the prose stays the meeting's first template. `follow-up`, `mutual-plan`, and `coaching` change the written summary and keep the general headings. This is a view over stored notes. It is not a model rewrite.
+Checkout outage review stores an incident template, so **Incident review** changes the summary text as well as the headings. On a meeting that does not store the id you picked, the headings still change and the prose stays the meeting's first template. Some sections show a slice of the same arrays (`take` / `skip`). That can put a heading on a fact that was not written for that heading.
 
-![Incident notes](docs/screenshots/incident-notes.jpg)
-
-### Action items
-
-Each item has a task, an owner, an optional due date, and a timestamp. The checkbox is stored under `localStorage` key `fanthom-actions-${meetingId}`. The key name is historical. Renaming it would drop checks already saved in a browser. Checks are not synced.
+Seeded template names **Customer follow-up**, **Mutual plan**, and **1:1** swap the written summary and keep the general headings. `structureFromTemplate` does not have a section list for those ids.
 
 ### Highlights
 
-Seeded highlights sit on the timeline and on [/highlights/](https://habinrahman.github.io/Callnote/highlights/). Opening one seeks the meeting. During a capture you can type a short title and mark the current time. Those marks are saved on the IndexedDB meeting and are not part of the public site.
+Seeded highlights sit on the player and on the [highlights page](https://habinrahman.github.io/Callnote/highlights/). Opening one seeks the meeting. They are authored fields. The page subtitle still says they were extracted. They were not.
+
+During a capture you can type a short title and mark the current time. Those marks are saved on the IndexedDB row and are not part of the public site. Clicking one seeks local playback.
 
 ![Highlights](docs/screenshots/highlights.jpg)
 
 ### Search
 
-[/search/](https://habinrahman.github.io/Callnote/search/) scans titles, template summaries and follow-ups, action tasks and owners, and up to three transcript lines per meeting. Matching is case-insensitive substring. Processing meetings are skipped. Decisions and highlight labels are found only when the same words appear in a summary or a line. Captured meetings are searched only after IndexedDB loads in that browser.
+[Search](https://habinrahman.github.io/Callnote/search/) scans, per ready meeting:
 
-![Search](docs/screenshots/search.jpg)
+- the title
+- each template's headline, summary, and follow-ups
+- action task and owner
+- up to three transcript lines
+
+Matching is `String.includes` on lowercased text. A timestamped hit links to `/meetings/{id}?t=`. Processing meetings are skipped. Highlight labels and decisions are not their own index. A decision is found when the same words appear in a summary or a line. The search subtitle mentions decisions. That is broader than the indexer.
+
+Captured meetings are searched only after IndexedDB loads in that browser. A fresh browser only hits the seed.
+
+![Search for error budget](docs/screenshots/search.jpg)
 
 ### Public clips
 
-Four seeded clips are static pages:
+Four seeded clips are static pages. No viewer account.
 
-- https://habinrahman.github.io/Callnote/share/northwind-decision/
-- https://habinrahman.github.io/Callnote/share/reliability-freeze/
-- https://habinrahman.github.io/Callnote/share/helio-hipaa/
-- https://habinrahman.github.io/Callnote/share/priya-secondary/
+| Clip | URL |
+| --- | --- |
+| Jonah's renewal decision | https://habinrahman.github.io/Callnote/share/northwind-decision/ |
+| Reliability freeze | https://habinrahman.github.io/Callnote/share/reliability-freeze/ |
+| Helio HIPAA | https://habinrahman.github.io/Callnote/share/helio-hipaa/ |
+| Priya / Luis secondary | https://habinrahman.github.io/Callnote/share/priya-secondary/ |
 
-Copy clip link builds an absolute URL with the `/Callnote/` prefix. A path without that prefix 404s on GitHub Pages. Captured clip pages (`/share/captured/`) only play back in the browser that holds the recording.
+The clip clamps playback to a start and an end taken from transcript segments. Northwind's clip uses the same WAV. **Copy link** and **Copy clip link** build an absolute URL with the Pages prefix. `https://habinrahman.github.io/meetings/...` omits `/Callnote/` and returns 404.
 
-![Shared clip](docs/screenshots/share-clip.jpg)
+`/share/captured/` plays a blob from this browser. Sending that URL to someone else does not send the audio.
+
+![Public clip](docs/screenshots/share-clip.jpg)
 
 ### Calendar
 
-[/calendar/](https://habinrahman.github.io/Callnote/calendar/) lists demo events. Connect stores `{ provider, name }` in `localStorage` (`callnote-calendar-demo`) and shows "Demo connection". The page states that Callnote does not call Google or Microsoft. Checkout outage review on the calendar is 60 minutes and links to the seeded meeting. The other events can start a local capture.
+[Calendar](https://habinrahman.github.io/Callnote/calendar/) is a demo list. **Connect calendar** writes `{ provider, name: "Jordan Lee" }` to `localStorage` (`callnote-calendar-demo`) and shows **Demo connection**. The page says Callnote does not call Google or Microsoft.
+
+Checkout outage review on the calendar is **60 min**, eight participants, labeled Google Meet, with **Open saved meeting** into the seeded workspace. Other cards can open **Start Callnote**. The ready screen says recording uses this browser's microphone and does not join the named platform. **Notetaker scheduled** on the Helio card is a label, not a bot.
 
 ![Calendar](docs/screenshots/calendar.jpg)
 
 ### Browser capture
 
-Start Callnote opens a ready screen, then a live screen that calls `getUserMedia` and `MediaRecorder` (`audio/webm;codecs=opus`, then webm, then mp4). Stop shows a processing panel for about 1.6 seconds, writes the blob plus the scripted lines and the prewritten notes, and opens `/meetings/captured/?id=`. The processing panel says this is not speech-to-text. If the microphone is denied, the page stays on a denied state instead of spinning.
+**Start recording** calls `getUserMedia` and `MediaRecorder`, preferring `audio/webm;codecs=opus`, then webm, then mp4. Stop shows **Processing meeting** for about 1.6 seconds, writes the blob plus the scripted lines that had already started and the prewritten notes, and opens `/meetings/captured/?id=`. The panel says this is not speech-to-text. If the microphone is denied, the page stays on a denied state.
 
-![Before capture](docs/screenshots/capture-ready.jpg)
+![Ready to record, without joining the call](docs/screenshots/capture-ready.jpg)
 
-## Reviewer walkthrough
+## Screenshot gallery
 
-If you have five minutes, stay on the live site.
-
-1. Library: point at **1 hr**, eight participants, and the processing card.
-2. Northwind: play, seek a transcript line, copy the meeting link, open the copied URL.
-3. Outage review: Incident review template, one action checkbox, one highlight.
-4. Open the [freeze clip](https://habinrahman.github.io/Callnote/share/reliability-freeze/) and the [renewal clip](https://habinrahman.github.io/Callnote/share/northwind-decision/).
-5. Search `migration check` or `error budget`.
-6. Optional: calendar connect, ten seconds of microphone, stop, play the capture back. Say that the words on screen were the demo script.
+| View | What it shows |
+| --- | --- |
+| [Library](docs/screenshots/library.jpg) | Duration, people, preview, open actions, Processing |
+| [Northwind workspace](docs/screenshots/northwind-workspace.jpg) | Player and transcript on the audible meeting |
+| [Incident notes](docs/screenshots/incident-notes.jpg) | Eight participants and the incident template |
+| [Highlights](docs/screenshots/highlights.jpg) | Seeded moments with timestamps |
+| [Search](docs/screenshots/search.jpg) | Literal hits for `error budget` |
+| [Public clip](docs/screenshots/share-clip.jpg) | A clip with no account |
+| [Calendar](docs/screenshots/calendar.jpg) | Demo connection and Start Callnote |
+| [Capture ready](docs/screenshots/capture-ready.jpg) | Microphone path, explicitly not a joined call |
+| [Library on a phone](docs/screenshots/library-mobile.jpg) | The same library at a narrow width |
 
 ## Architecture
 
+Seeded pages are HTML and JavaScript from `next build` with `output: "export"`. GitHub Pages serves the `out/` directory. After load, the client reads IndexedDB and `localStorage`. There is no application server and no database.
+
 ```mermaid
 flowchart LR
-  subgraph publicSite [Public static site]
-    Pages[Next.js export]
+  subgraph pages [GitHub Pages]
+    Export[Next.js static export]
     Seed[lib/seed meetings]
-    Audio[Northwind WAV]
-    Pages --> Seed
-    Pages --> Audio
+    Wav[Northwind WAV]
+    Export --> Seed
+    Export --> Wav
   end
-  subgraph browser [This browser only]
+  subgraph browser [This browser]
+    UI[Library, meeting, search, calendar]
+    Player[Audio element or timer]
     Mic[MediaRecorder]
     IDB[(IndexedDB callnote-capture)]
-    LS[(localStorage checks and calendar flag)]
+    LS[(localStorage)]
+    UI --> Player
     Mic --> IDB
+    UI --> LS
+    IDB --> UI
   end
-  Pages --> Library[Library and meeting pages]
-  IDB --> Library
-  Library --> Player[Player and transcript]
-  Seed --> Notes[Section map in lib/intelligence]
-  Notes --> Library
+  Export --> UI
+  Seed --> Notes[lib/intelligence section map]
+  Notes --> UI
 ```
 
-Seeded pages are HTML and JS produced by `next build` with `output: "export"`. GitHub Pages serves the `out/` directory. The client bundle reads IndexedDB and `localStorage` after load. There is no application server and no database.
+| Boundary | Responsibility |
+| --- | --- |
+| `app/` | Routes. Seeded pages are static. Captures reuse `/meetings/captured/` |
+| `components/` | Shell, library, player, transcript, notes, calendar, capture |
+| `lib/domain/` | Types, UTC formatting, seeded queries. No React |
+| `lib/seed/` | Meeting content and transcript timing |
+| `lib/intelligence/` | Template headings. No network |
+| `lib/audio/` | Northwind cue table |
+| `lib/capture/` | Demo calendar, IndexedDB, captured search |
+
+`usePathname()` returns the path without the base path. `Link` adds `/Callnote/` in the production build. Copied links add it in `copyLink` before `new URL`, because a leading slash would otherwise drop the project path.
 
 ## Repository structure
 
-| Path | What it is |
-| --- | --- |
-| `app/` | Routes. Static pages, meeting, share, calendar, capture |
-| `components/` | Shell, library, player, transcript, workspace, capture UI |
-| `lib/domain/` | Types, UTC formatting, seeded queries. No React |
-| `lib/seed/` | Meetings and the `layOut` timing helper |
-| `lib/intelligence/` | Template section map. No network |
-| `lib/audio/` | Northwind cue table |
-| `lib/capture/` | Calendar demo data, IndexedDB, captured search |
-| `public/audio/` | `northwind-renewal.wav` |
-| `scripts/verify-demo.mjs` | Browser checks against a built site |
-| `.github/workflows/pages.yml` | Build and GitHub Pages deploy |
-| `.agent-logs/` | Assignment agent-capture logs. Do not delete |
-| `docs/PRODUCT-REVIEW.md` | Internal engineering review |
+```text
+app/                  routes
+components/           UI
+lib/domain/           types, format, queries
+lib/seed/             meetings and layOut
+lib/intelligence/     template section map
+lib/audio/            Northwind cues
+lib/capture/          calendar demo, IndexedDB, captured search
+public/audio/         northwind-renewal.wav
+scripts/verify-demo.mjs
+.github/workflows/pages.yml
+.cursor/hooks.json    agent-capture hook for the assignment
+.agent-logs/          hook output. Not part of the product
+docs/screenshots/     images in this README
+docs/PRODUCT-REVIEW.md
+```
 
-The npm package name is `fanthom`. That name is internal. The product name is Callnote.
-
-## Data model
-
-Seeded `Meeting` (`lib/domain/types.ts`): id, title, start, duration, status (`ready` or `processing`), speakers, transcript segments, highlights, actions, decisions, topics, moments, summary templates, clips.
-
-`CapturedMeeting` (`lib/capture/db.ts`): id, source event, participants, script lines, highlights, notes, and an audio `Blob`. It is not the same type as `Meeting`. Captured rows never enter the static export.
-
-## Route map
-
-| Route | Role |
-| --- | --- |
-| `/` | Library |
-| `/search/` | Literal search |
-| `/highlights/` | Seeded highlights, plus captured ones in this browser |
-| `/meetings/northwind-renewal/` | Audio demo |
-| `/meetings/reliability-review/` | Eight people, about one hour, no audio |
-| `/meetings/helio-discovery/` | Discovery notes |
-| `/meetings/priya-luis-1on1/` | 1:1 notes |
-| `/meetings/alex-interview/` | Stays in processing |
-| `/meetings/captured/?id=` | A recording stored in this browser |
-| `/share/northwind-decision/` and the other clip ids | Public clips |
-| `/share/captured/?id=&h=` | Local clip only |
-| `/calendar/` | Demo calendar |
-| `/calendar/[id]/` | Ready to capture |
-| `/calendar/[id]/live/` | Microphone session |
-
-On GitHub Pages every path is under `/Callnote/`. Example: `https://habinrahman.github.io/Callnote/meetings/northwind-renewal/`.
-
-`usePathname()` returns the path without the base path. Next.js `Link` adds the prefix. Copied links add it in `copyLink` before `new URL`, because a leading slash would otherwise replace the project path.
+`.cursor/hooks.json` runs `.cursor/hooks/agent-capture.mjs` on prompt submit, agent response, and stop. The logs in `.agent-logs/` are that capture. They are not used at runtime by Callnote.
 
 ## Engineering deep dive
 
-**Static first.** Seeded content is build input. New captures cannot create new static paths, so they reuse `/meetings/captured/` and put the id in the query string.
+<details>
+<summary>Static export and the Pages base path</summary>
 
-**Base path.** `NEXT_PUBLIC_BASE_PATH=/Callnote` is set in the Pages workflow. Local `npm run dev` leaves it empty, so the dev server is at `/`. A production build without the variable also omits the prefix. The live site always sets it.
+The production build sets `NEXT_PUBLIC_BASE_PATH=/Callnote` in [`.github/workflows/pages.yml`](.github/workflows/pages.yml). `next.config.ts` applies that value as `basePath`, with `trailingSlash` and unoptimized images. A local `npm run dev` leaves the variable empty, so the dev server is at `/`.
 
-**Playback.** `usePlayback` either drives an `Audio` element or a timer. Cue helpers convert between file time and meeting time. `pendingAudio` blocks `timeupdate` from overwriting a seek that is not buffered yet.
+A copied URL is built as `new URL(basePath + path, origin)`. That is what keeps `https://habinrahman.github.io/Callnote/meetings/northwind-renewal/?t=…` intact. Asset URLs for the WAV use the same prefix.
 
-**Transcript clock.** `layOut` gives each line a spoken duration from its word count, then splits the remaining meeting duration into gaps. Highlight and clip ranges use segment indexes, so they stay on the right line when the duration changes. They do not represent continuous speech across a full hour.
+New captures cannot create new static paths. They open `/meetings/captured/?id=`.
 
-**Capture.** Real microphone bytes. Scripted words. Prewritten notes. The processing delay is a fixed timeout, then `router.push` to the captured meeting.
+</details>
 
-**Search.** One loop in `searchMeetings`. No index file, no vectors.
+<details>
+<summary>Playback and transcript clock</summary>
 
-**Verification.** `scripts/verify-demo.mjs` drives installed Chrome through the library, Northwind playback and seek, the action checkbox, the public clip, and the long meeting. It is not wired as an npm script. `DEMO_URL` overrides the base. `npx tsc --noEmit` is the typecheck. There is no ESLint script.
+`usePlayback` either drives an `Audio` element or a `requestAnimationFrame` clock. Cue helpers convert between file time and meeting time. A pending seek blocks `timeupdate` from overwriting the clock before the media is seekable. The range input ignores programmatic updates unless the pointer or keyboard is on the control.
 
-**Deployment.** Push to `master` runs `.github/workflows/pages.yml`: `npm ci`, `npm run build` with the base path, upload `out/`, deploy Pages.
+`layOut` does not store a recorded timeline. Highlight and clip ranges use segment indexes, so they stay on the right line when the meeting duration changes. A 60-minute meeting with a few dozen lines has long gaps. That is how the duration is met.
+
+</details>
+
+<details>
+<summary>Capture, IndexedDB, and localStorage</summary>
+
+| Data | Where | Who can see it |
+| --- | --- | --- |
+| Seeded meetings, clips, WAV | Static export | Anyone with the URL |
+| Action checks | `localStorage` key `fanthom-actions-${id}` | This browser |
+| Demo calendar flag | `localStorage` key `callnote-calendar-demo` | This browser |
+| Captured audio, script, notes, highlights | IndexedDB `callnote-capture` / `meetings` | This browser |
+| Playhead | `?t=` | Whoever has a seeded link |
+
+The action-item key still starts with `fanthom-`. Renaming it would drop checks already stored in a browser. The npm package name is also `fanthom`. The product name is Callnote.
+
+Dates render in UTC so the static HTML and the browser agree.
+
+</details>
+
+<details>
+<summary>Search and verification</summary>
+
+Search is one loop in `searchMeetings`. There is no index file and no vector store. Captured search is a second loop over IndexedDB rows.
+
+[`scripts/verify-demo.mjs`](scripts/verify-demo.mjs) drives Chrome through the library, Northwind play and seek, an action checkbox, the public clip, and the long meeting. It is a smoke script, not a test suite. There are no unit tests. `npx tsc --noEmit` is the typecheck. There is no ESLint script.
+
+</details>
+
+## Data model
+
+Seeded `Meeting`: id, title, start, `durationSec`, status (`ready` or `processing`), speakers, transcript segments, highlights, actions, decisions, topics, moments, summary templates, clips.
+
+`CapturedMeeting` is a separate type: participants, script lines, highlights, a notes object, and an audio `Blob`. Captured rows are not part of the static export.
+
+```mermaid
+flowchart TD
+  Meeting --> Speaker
+  Meeting --> Segment[Transcript segment]
+  Meeting --> Highlight
+  Meeting --> Action[Action item]
+  Meeting --> Decision
+  Meeting --> Topic
+  Meeting --> Template[Summary template]
+  Meeting --> Clip
+  Clip --> Segment
+  Highlight --> Segment
+```
+
+A template has an id, name, headline, executive summary, and follow-ups. The section map is not stored on the meeting. It is chosen from the template id at render time.
+
+## Route map
+
+Paths below are the in-app path. On GitHub Pages, prefix `/Callnote`.
+
+| Route | Purpose |
+| --- | --- |
+| `/` | Library |
+| `/search/` | Literal search |
+| `/highlights/` | Seeded highlights, plus local captures |
+| `/meetings/northwind-renewal/` | Audio demo |
+| `/meetings/reliability-review/` | About one hour, eight people, no audio file |
+| `/meetings/helio-discovery/` | Discovery notes |
+| `/meetings/priya-luis-1on1/` | 1:1 notes |
+| `/meetings/alex-interview/` | Stays in processing |
+| `/meetings/captured/?id=` | A recording in this browser |
+| `/share/northwind-decision/` | Public clip. Same pattern for the other three ids |
+| `/share/captured/?id=&h=` | Local clip only |
+| `/calendar/` | Demo calendar |
+| `/calendar/reliability-review/` | Ready screen. Also `northwind-renewal` and `helio-discovery` |
+| `/calendar/[id]/live/` | Microphone session |
+
+## Built for the 8x assignment
+
+Callnote is a Fathom-inspired meeting product for the 8x Software Engineer assignment: an end-to-end post-meeting workspace, with an explicit decision not to build a joining bot. A longer internal review is in [docs/PRODUCT-REVIEW.md](docs/PRODUCT-REVIEW.md).
+
+| Requirement | Status | Where |
+| --- | --- | --- |
+| Meeting library | Built | `/` |
+| Playback and transcript | Built | Northwind WAV and cue map. Other seeded meetings use a silent clock |
+| Summary | Built | Seeded templates. No model |
+| Templates | Built, constrained | Five heading structures. Incident review is the fair demo |
+| Action items | Built | Checkbox in `localStorage` |
+| Highlights | Built | Seeded marks are public. New marks are local |
+| Search | Built | Literal. Not semantic |
+| Public clip | Built | Four static clip pages |
+| About 8 people and 1 hour | Built | Checkout outage review. No audio file |
+| Responsive layout | Built | Player, then transcript, then notes |
+| Calendar connect | Demo | `localStorage`. Does not call Google or Microsoft |
+| Notetaker joins the meeting | Not implemented | Ready screen says the microphone does not join the platform |
+| Record | Built, local | `MediaRecorder`. Transcript is a timed script |
+| Public deployment | Built | GitHub Pages under `/Callnote/` |
+| Public repository | Built | https://github.com/habinrahman/Callnote |
+| Agent logs | Built | `.agent-logs/` and `.cursor/hooks.json` |
+| Walkthrough video | Not in the repo | Record it from the live site |
 
 ## Product decisions
 
-The library is the front door because a reviewer can judge the product without a microphone. Northwind carries audio because one synced meeting is enough to prove the player. The outage review carries length and headcount because producing an hour of speech was the wrong use of the time. Alex Rivera stays processing so that state is visible without trapping a real capture there.
+The library is the front door so a reviewer can judge the product without a microphone. Northwind carries the only seeded audio file because one synced meeting is enough to prove the player. The outage review carries length and headcount because an hour of produced speech was the wrong use of the time. Alex Rivera stays in processing so that state is visible without blocking a new capture.
 
-Templates exist so the same notes can be read as an incident, a sale, a discovery, or an interview. They are honest only when the meeting actually has that writing. The incident template on the outage review is the one to show.
+Templates exist so the same notes can be read as an incident, a sale, a discovery, or an interview. They are convincing when the meeting actually has that writing. The incident template on the outage review is the one to show.
+
+Public clips exist so a moment can be opened with no account. Captured audio stays local because a static host cannot store a private blob for someone else.
 
 ## Trade-offs
 
 | Decision | Reason | Sacrifice | Benefit |
 | --- | --- | --- | --- |
-| Static export | Public URL with no server to run | No accounts, no private clips, no new HTML routes per capture | The site is inspectable immediately |
-| Authored notes | No model key and no failure during a demo | Cannot claim live intelligence | The walkthrough is repeatable |
+| Static export | A public URL with nothing to operate | No accounts, no private clips, no new HTML route per capture | The site can be opened immediately |
+| Authored notes | No model key and no failure during a demo | The product cannot claim live intelligence | The same meeting reads the same way every time |
 | Browser recorder | The brief allows a stubbed bot | The app never joins a call | The microphone path is real and labeled |
-| IndexedDB | Matches a static host | Captures are not shared and not backed up | No database to provision |
-| One WAV | Time | Four meetings are silent | Northwind playback is specific, not a fake equalizer |
+| IndexedDB | Fits a static host | Captures are not shared and not backed up | No database to run |
+| One WAV | Time | Four meetings are silent | Northwind playback is specific |
 
 ## Notes, not a model
 
-No LLM is called. No API key is shipped. Summaries are not generated on request. Search is not semantic. Highlights are not extracted by a job.
+No external model is called. No API key is read. Summaries are not requested from a service. Search is not semantic. Highlights are not extracted by a job.
 
-`lib/intelligence/present.ts` is the seam. It returns section kinds. A future caller could fill those kinds from a model. This repository does not.
-
-## Recording
-
-| Kind | Where | What it is |
-| --- | --- | --- |
-| Seeded audio | Northwind WAV plus cue table | Spoken lines, mapped onto the meeting clock |
-| Browser audio | `MediaRecorder` blob in IndexedDB | Your microphone, played back locally |
-| Silent clock | Other seeded meetings | Timer and transcript only |
-| Meeting bot | Not built | No Zoom, Meet, or Teams integration |
+[`lib/intelligence/present.ts`](lib/intelligence/present.ts) is the seam. It returns section kinds: prose, decisions, actions, topics, moments, or a list. A later caller could fill those kinds from a model. This repository does not.
 
 ## Privacy
 
-Public: the seeded meetings, the four clips, the WAV, and this source.
+Public: every seeded meeting, the four clips, the WAV, and this source. There is no auth wall.
 
-Local: action checkmarks, the demo calendar flag, and captured audio, lines, notes, and highlights.
+Local: action checks, the demo calendar flag, and captured audio, lines, notes, and highlights.
 
-Not implemented: accounts, private links, encryption beyond the browser, revocation, or a server.
+Not implemented: accounts, private links, revocation, or encryption beyond what the browser already does.
 
-A backend would be required for real calendar OAuth, a bot, sharing a capture with someone else, and any model call whose key should not live in the client.
+A backend would be required for calendar OAuth, a bot, sharing a capture with another person, and any model call whose key must not ship in the client.
 
-## Testing
+This is a public demo with browser-local capture. It is not a private workspace.
+
+## Local development
+
+Node.js 22 is what the Pages workflow uses. No environment variable is required to run the dev server.
 
 ```bash
 npm install
+npm run dev
+```
+
+Open http://localhost:3000. The dev server has no `/Callnote/` prefix.
+
+Typecheck:
+
+```bash
 npx tsc --noEmit
 ```
 
-Production export, from the repository root:
+Production export, from the repository root. On PowerShell:
 
-```bash
-# PowerShell
+```powershell
 $env:NEXT_PUBLIC_BASE_PATH="/Callnote"
 npx next build
 ```
 
-Serve `out/` under a `/Callnote/` prefix and run:
+Serve the `out/` directory under a `/Callnote/` prefix, then:
 
-```bash
-# PowerShell
+```powershell
 $env:DEMO_URL="http://127.0.0.1:3466/Callnote"
 node scripts/verify-demo.mjs
 ```
 
-The script expects Google Chrome at `C:\Program Files\Google\Chrome\Application\chrome.exe`. It fails on `pageerror`. Favicon load noise is ignored.
-
-Local development, without the Pages prefix:
-
-```bash
-npm run dev
-```
-
-Open http://localhost:3000.
+The script expects Google Chrome at `C:\Program Files\Google\Chrome\Application\chrome.exe`. It fails on an uncaught page error. There is no `npm test` script.
 
 ## Deployment
 
-GitHub Pages: https://habinrahman.github.io/Callnote/
+Pushing `master` runs [`.github/workflows/pages.yml`](.github/workflows/pages.yml): `npm ci`, `npm run build` with `NEXT_PUBLIC_BASE_PATH=/Callnote`, upload `out/`, deploy GitHub Pages.
 
-The workflow sets `NEXT_PUBLIC_BASE_PATH` to `/Callnote`. Styles, scripts, the WAV, and routes are all under that prefix. `https://habinrahman.github.io/meetings/...` is the wrong host path and returns 404.
+The live site is https://habinrahman.github.io/Callnote/
 
-## 8x assignment mapping
-
-| Requirement | In this repo |
-| --- | --- |
-| Meeting library | Built. `/` |
-| Connect a calendar | Demo only. `localStorage`. Copy says Google and Microsoft are not called |
-| Notetaker joins the meeting | Not built. A demo event opens a browser recorder |
-| Record | Built locally. `MediaRecorder` |
-| Play against the transcript | Built. Audio on Northwind. Silent clock elsewhere |
-| Summary | Built from seeded notes. No model |
-| Template switching | Built as a section map. Strongest on the incident template |
-| Action items | Built. Browser-local checks |
-| Highlights | Built. Seeded marks are public. New marks are local |
-| Search | Built. Literal. Not semantic |
-| Share a clip | Built for four seeded clips |
-| About 8 people and 1 hour | Built. Checkout outage review. No audio |
-| Responsive | Built. Player, then transcript, then notes |
-| Public deployment | Built. GitHub Pages under `/Callnote/` |
-| Public repository | https://github.com/habinrahman/Callnote |
-| Agent logs | `.agent-logs/` and `.cursor/hooks.json` |
-| Walkthrough video | Not in the repository. Record it from the live site |
-
-A longer review is in [docs/PRODUCT-REVIEW.md](docs/PRODUCT-REVIEW.md).
+Styles, scripts, the WAV, and routes are under that prefix. A URL on `habinrahman.github.io` that omits `/Callnote/` is the wrong path.
 
 ## Known limitations
 
 Intentional:
 
-- No OAuth, no meeting bot, no accounts, no model.
+- No calendar OAuth, no meeting bot, no accounts, no model.
 - One seeded audio file.
 - Alex Rivera never leaves Processing.
 - Captures and checkmarks stay in the browser that created them.
@@ -342,26 +449,32 @@ Intentional:
 Technical:
 
 - Template headings can outrun the copy when the meeting has no template with that id.
-- `follow-up`, `mutual-plan`, and `coaching` do not change section headings.
-- Search returns at most three transcript hits per meeting and skips highlight labels as their own type.
-- The Highlights page still says moments were "extracted". They were written in the seed.
-- Search's subtitle mentions decisions. The indexer has no decision field. A decision is found when the same words are in a summary or a transcript line.
-- A failed IndexedDB write during processing leaves the processing panel up.
+- **Customer follow-up**, **Mutual plan**, and **1:1** do not change section headings.
+- Search returns at most three transcript hits per meeting.
+- The highlights page says moments were extracted. They were written in the seed.
+- If the IndexedDB write fails, the processing panel stays up. The timeout does not wait on real work.
+- The sidebar **Shared with me** list is not a share inbox.
 
 ## Future work
 
-Worth doing only after a real user needs it:
+Only if a real user needed it: one notes renderer shared by seeded and captured meetings, template ids that appear only when the prose was written for them, a visible failure when IndexedDB is full, and private sharing. Private sharing needs a backend.
 
-- One section renderer shared by seeded and captured meetings.
-- Template ids that only appear when the prose was written for them.
-- A warning when IndexedDB quota fails.
-- Private sharing, which requires a backend.
-
-Not worth doing for this assignment: a bot, OAuth, or a model call added so the README can use the word AI.
+Not part of this assignment: OAuth, a bot, or a model call added so the documentation can say the product is intelligent.
 
 ## Contributing
 
-This repository is an assignment snapshot. Issues and pull requests are not part of the submission path.
+This repository is an assignment snapshot.
+
+1. Fork the repository and create a branch.
+2. `npm install` and `npm run dev`.
+3. `npx tsc --noEmit` before opening a pull request.
+4. For a production check, build with `NEXT_PUBLIC_BASE_PATH=/Callnote` and run `scripts/verify-demo.mjs` against that export.
+
+Do not delete `.agent-logs/` or disable `.cursor/hooks.json`.
+
+## License
+
+No license file is included in this repository.
 
 ## Author
 
