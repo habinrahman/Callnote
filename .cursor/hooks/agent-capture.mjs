@@ -43,6 +43,17 @@ function undoWindowsMojibake(text) {
   }
 }
 
+function repairTree(value) {
+  if (typeof value === "string") return undoWindowsMojibake(value);
+  if (Array.isArray(value)) return value.map(repairTree);
+  if (value && typeof value === "object") {
+    const out = {};
+    for (const [key, item] of Object.entries(value)) out[key] = repairTree(item);
+    return out;
+  }
+  return value;
+}
+
 function readStdin() {
   const chunks = [];
   const buf = Buffer.alloc(64 * 1024);
@@ -61,10 +72,10 @@ function readStdin() {
     }
     return {};
   }
-  const raw = undoWindowsMojibake(Buffer.concat(chunks).toString("utf8")).trim();
+  const raw = Buffer.concat(chunks).toString("utf8").trim();
   if (!raw) return {};
   try {
-    return JSON.parse(raw);
+    return repairTree(JSON.parse(raw));
   } catch (error) {
     try {
       fs.mkdirSync(STATE, { recursive: true });
