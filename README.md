@@ -1,6 +1,6 @@
-# Fathom
+# Callnote
 
-A meeting-notes product: a library of finished calls, a player tied to the transcript, a structured summary, action items, highlights, search, and a public clip link.
+Callnote is a meeting-notes product built for the 8x engineering assignment, inspired by workflows observed in Fathom. It is a library of finished calls, a player tied to the transcript, a structured summary, action items, highlights, search, and a public clip link.
 
 A visitor does not need an account. The demo data is in the repository, so the deployed site works without a personal session and without an AI API key.
 
@@ -48,7 +48,7 @@ Then, in another terminal, `DEMO_URL=http://127.0.0.1:3000 node scripts/verify-d
 
 ## Deployment
 
-GitHub Pages serves the static `out/` directory. The public site is https://habinrahman.github.io/Fanthom/ — the path uses the repository name’s exact case. `NEXT_PUBLIC_BASE_PATH` in the Pages workflow must match that case, or a direct meeting URL loads with no script and looks blank. Seeded meetings are part of the build.
+GitHub Pages serves the static `out/` directory. The repository slug stays `Fanthom`, so the public site remains https://habinrahman.github.io/Fanthom/. That path uses the repository name’s exact case. `NEXT_PUBLIC_BASE_PATH` in the Pages workflow must match that case, or a direct meeting URL loads with no script and looks blank. Seeded meetings are part of the build. The product name on the site is Callnote.
 
 ## Known limitations
 

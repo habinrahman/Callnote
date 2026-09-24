@@ -20,8 +20,8 @@ export function Shell({
     <div className="min-h-screen lg:grid lg:grid-cols-[232px_minmax(0,1fr)]">
       <aside className="border-b border-line bg-card lg:min-h-screen lg:border-b-0 lg:border-r">
         <div className="px-4 py-4 lg:px-4 lg:py-5">
-          <Link href="/" className="text-lg font-semibold tracking-tight text-ink">
-            Fathom
+          <Link href="/" className="text-lg font-semibold tracking-tight text-ink" aria-label="Callnote, all meetings">
+            Callnote
           </Link>
           <nav className="mt-4" aria-label="Meetings">
             <Link

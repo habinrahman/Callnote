@@ -54,7 +54,7 @@ export function ShareView({ view }: { view: ClipView }) {
   return (
     <div>
       <BackHome />
-      <p className="mt-3 text-xs font-medium uppercase tracking-wide text-pine">Shared clip</p>
+      <p className="mt-3 text-xs font-medium uppercase tracking-wide text-pine">Callnote clip</p>
       <h1 className="mt-1 text-2xl font-semibold tracking-tight">{clip.title}</h1>
       <p className="mt-2 text-sm text-muted">
         From {view.meetingTitle} · {formatWhen(view.startedAt)}

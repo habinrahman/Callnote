@@ -12,7 +12,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const meeting = getMeeting(id);
-  return { title: meeting ? `${meeting.title} · Fathom` : "Meeting" };
+  return {
+    title: meeting?.title ?? "Meeting",
+    description: meeting?.preview,
+    openGraph: meeting
+      ? { title: `${meeting.title} · Callnote`, description: meeting.preview, siteName: "Callnote" }
+      : undefined,
+  };
 }
 
 export function generateStaticParams() {

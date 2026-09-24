@@ -10,7 +10,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { clipId } = await params;
   const view = getClip(clipId);
-  return { title: view ? `${view.clip.title} · Fathom` : "Clip" };
+  return {
+    title: view?.clip.title ?? "Clip",
+    description: view?.clip.note,
+    openGraph: view
+      ? { title: `${view.clip.title} · Callnote`, description: view.clip.note, siteName: "Callnote" }
+      : undefined,
+  };
 }
 
 export function generateStaticParams() {

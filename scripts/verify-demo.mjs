@@ -23,6 +23,8 @@ function check(name, ok) {
 
 await page.goto(base);
 await page.getByRole("heading", { name: "Meetings" }).waitFor();
+check("product name", (await page.getByRole("link", { name: "Callnote, all meetings" }).innerText()) === "Callnote");
+check("browser title", (await page.title()).includes("Callnote"));
 check("dashboard title", await page.getByRole("link", { name: /Checkout outage review/ }).first().isVisible());
 check("long meeting listed", await page.getByText("48 min").first().isVisible());
 check("processing meeting", await page.getByText("Processing").first().isVisible());
@@ -58,7 +60,8 @@ check("share copied", (await page.getByText(/Clip link copied|northwind-decision
 
 await page.goto(`${base}/share/northwind-decision/`);
 await page.getByRole("heading", { name: "Jonah's renewal decision" }).waitFor();
-check("public clip", await page.getByText("Shared clip", { exact: true }).isVisible());
+check("public clip", await page.getByText("Callnote clip", { exact: true }).isVisible());
+check("clip title", (await page.title()).includes("Callnote"));
 
 await page.setViewportSize({ width: 390, height: 800 });
 await page.goto(`${base}/meetings/reliability-review/`);
