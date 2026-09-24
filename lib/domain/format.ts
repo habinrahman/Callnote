@@ -42,6 +42,22 @@ export function formatDue(iso: string): string {
   }).format(new Date(iso));
 }
 
+export function nextPlayhead(
+  time: number,
+  delta: number,
+  segments: { startSec: number; endSec: number }[],
+  end: number,
+): number {
+  const index = activeSegmentIndex(segments, time);
+  const linear = Math.min(end, time + delta);
+  if (index < 0) return linear;
+  const current = segments[index];
+  const following = segments[index + 1];
+  const gap = following ? following.startSec - current.endSec : 0;
+  if (following && gap > 1.5 && linear >= current.endSec) return Math.min(end, following.startSec);
+  return linear;
+}
+
 export function activeSegmentIndex(
   segments: { startSec: number }[],
   time: number,

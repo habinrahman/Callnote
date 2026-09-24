@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { formatDuration, formatWhen } from "@/lib/domain/format";
-import { getMeeting } from "@/lib/domain/queries";
+import { getMeeting, listMeetings } from "@/lib/domain/queries";
 import { BackHome } from "@/components/bits";
 import { MeetingWorkspace } from "@/components/meeting-workspace";
 
@@ -15,15 +15,14 @@ export async function generateMetadata({
   return { title: meeting ? `${meeting.title} · Fathom` : "Meeting" };
 }
 
-export default async function MeetingPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ t?: string }>;
-}) {
+export function generateStaticParams() {
+  return listMeetings().map((meeting) => ({ id: meeting.id }));
+}
+
+export const dynamicParams = false;
+
+export default async function MeetingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { t } = await searchParams;
   const meeting = getMeeting(id);
   if (!meeting) notFound();
 
@@ -46,7 +45,5 @@ export default async function MeetingPage({
     );
   }
 
-  const initial = Number(t);
-  const initialTime = Number.isFinite(initial) ? Math.min(meeting.durationSec, Math.max(0, initial)) : 0;
-  return <MeetingWorkspace meeting={meeting} initialTime={initialTime} />;
+  return <MeetingWorkspace meeting={meeting} initialTime={0} />;
 }

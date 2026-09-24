@@ -22,6 +22,10 @@ export function listMeetings(): MeetingSummary[] {
     .sort((a, b) => (a.startedAt < b.startedAt ? 1 : -1));
 }
 
+export function listClipIds(): string[] {
+  return meetings.flatMap((meeting) => meeting.clips.map((clip) => clip.id));
+}
+
 export function getMeeting(id: string): Meeting | null {
   return meetings.find((meeting) => meeting.id === id) ?? null;
 }

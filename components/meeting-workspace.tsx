@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { formatClock, formatDue, formatDuration, formatWhen } from "@/lib/domain/format";
+import { formatClock, formatDue, formatDuration, formatWhen, nextPlayhead } from "@/lib/domain/format";
 import type { Meeting } from "@/lib/domain/types";
 import { BackHome, speakerName, TimeButton } from "@/components/bits";
 import { PlaybackBar } from "@/components/playback-bar";
@@ -41,7 +42,7 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
     const loop = (now: number) => {
       const delta = ((now - last) / 1000) * rateRef.current;
       last = now;
-      const next = Math.min(end, timeRef.current + delta);
+      const next = nextPlayhead(timeRef.current, delta, meeting.segments, end);
       timeRef.current = next;
       setTime(next);
       if (next >= end) {
@@ -53,6 +54,16 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
     frame = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frame);
   }, [playing, end]);
+
+  useEffect(() => {
+    const raw = new URLSearchParams(window.location.search).get("t");
+    if (!raw) return;
+    const next = Number(raw);
+    if (!Number.isFinite(next)) return;
+    const clamped = Math.min(end, Math.max(0, next));
+    timeRef.current = clamped;
+    setTime(clamped);
+  }, [end]);
 
   useEffect(() => {
     const raw = window.localStorage.getItem(storageKey(meeting.id));
@@ -113,13 +124,19 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
         <div>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{meeting.title}</h1>
           <p className="mt-2 text-sm text-muted">
-            {formatWhen(meeting.startedAt)} · {formatDuration(meeting.durationSec)} ·{" "}
-            {meeting.speakers.map((person) => person.name).join(", ")}
+            {formatWhen(meeting.startedAt)} · {formatDuration(meeting.durationSec)}
           </p>
+          <ul className="mt-2 flex flex-wrap gap-1.5">
+            {meeting.speakers.map((person) => (
+              <li key={person.id} className="rounded-full bg-sand px-2 py-0.5 text-xs text-ink">
+                {person.name}
+              </li>
+            ))}
+          </ul>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <label className="text-sm text-muted">
-            <span className="sr-only">Summary template</span>
+          <label className="flex items-center gap-2 text-sm text-muted">
+            <span>Template</span>
             <select
               value={template.id}
               onChange={(event) => setTemplateId(event.target.value)}
@@ -140,28 +157,37 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
             Copy link
           </button>
           {clip ? (
-            <button
-              type="button"
-              onClick={() => copyLink(`/share/${clip.id}`, "Clip link copied")}
-              className="rounded-md bg-pine px-3 py-1.5 text-sm text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine"
-            >
-              Share clip
-            </button>
+            <>
+              <Link
+                href={`/share/${clip.id}`}
+                className="rounded-md bg-pine px-3 py-1.5 text-sm text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine"
+              >
+                Open shared clip
+              </Link>
+              <button
+                type="button"
+                onClick={() => copyLink(`/share/${clip.id}`, "Clip link copied")}
+                className="rounded-md border border-line bg-card px-3 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine"
+              >
+                Copy clip link
+              </button>
+            </>
           ) : null}
         </div>
       </div>
       {copied ? <p className="mt-2 text-sm text-pine">{copied}</p> : null}
-      <p className="mt-2 text-xs text-muted">Space plays or pauses when you are not typing.</p>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(300px,400px)]">
-        <div className="space-y-6">
+        <div className="order-1 space-y-6 lg:col-start-1">
           <PlaybackBar
             seed={meeting.id}
+            label="Recording"
             time={time}
             start={0}
             end={end}
             playing={playing}
             rate={rate}
+            marks={meeting.highlights.map((highlight) => ({ at: highlight.startSec, label: highlight.label }))}
             onToggle={() => setPlaying((value) => !value)}
             onSeek={seek}
             onRate={setRate}
@@ -191,6 +217,18 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
             </ul>
           </section>
 
+        </div>
+        <div className="order-2 lg:col-start-2 lg:row-span-2">
+        <TranscriptPane
+          speakers={meeting.speakers}
+          segments={meeting.segments}
+          time={time}
+          query={transcriptQuery}
+          onQuery={setTranscriptQuery}
+          onSeek={seek}
+        />
+        </div>
+        <div className="order-3 space-y-6 lg:col-start-1">
           <article className="rounded-lg border border-line bg-card p-4 sm:p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted">{template.name}</p>
             <h2 className="mt-2 text-xl font-semibold leading-snug">{template.headline}</h2>
@@ -235,10 +273,9 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
                     />
                     <div>
                       <p className={done ? "text-sm text-muted line-through" : "text-sm"}>{item.task}</p>
-                      <p className="mt-1 text-xs text-muted">
-                        {item.owner}
-                        {item.dueDate ? ` · due ${formatDue(item.dueDate)}` : ""}
-                        {" · "}
+                      <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
+                        <span className="rounded bg-sand px-1.5 py-0.5 text-ink">{item.owner}</span>
+                        {item.dueDate ? <span>Due {formatDue(item.dueDate)}</span> : null}
                         <button
                           type="button"
                           onClick={() => seek(item.timestampSec)}
@@ -273,14 +310,6 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
             </ul>
           </article>
         </div>
-        <TranscriptPane
-          speakers={meeting.speakers}
-          segments={meeting.segments}
-          time={time}
-          query={transcriptQuery}
-          onQuery={setTranscriptQuery}
-          onSeek={seek}
-        />
       </div>
     </div>
   );

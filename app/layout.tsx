@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Shell } from "@/components/shell";
+import { listMeetings } from "@/lib/domain/queries";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,7 +14,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <Suspense fallback={null}>
-          <Shell>{children}</Shell>
+          <Shell meetings={listMeetings().map((meeting) => ({ id: meeting.id, title: meeting.title }))}>
+            {children}
+          </Shell>
         </Suspense>
       </body>
     </html>

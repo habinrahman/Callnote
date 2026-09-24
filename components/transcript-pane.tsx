@@ -34,7 +34,7 @@ export function TranscriptPane({
   }, [active, needle]);
 
   return (
-    <section className="flex min-h-[420px] flex-col rounded-lg border border-line bg-card lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)]" aria-label="Transcript">
+    <section className="flex max-h-[50vh] min-h-[280px] flex-col rounded-lg border border-line bg-card lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:min-h-[420px]" aria-label="Transcript">
       <div className="border-b border-line px-3 py-3">
         <label htmlFor="transcript-search" className="mb-1 block text-xs font-medium uppercase tracking-wide text-muted">
           Transcript

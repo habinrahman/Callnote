@@ -1,10 +1,10 @@
+import { Suspense } from "react";
 import { Dashboard } from "@/components/dashboard";
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}) {
-  const { q } = await searchParams;
-  return <Dashboard query={q ?? ""} />;
+export default function HomePage() {
+  return (
+    <Suspense fallback={<p className="text-sm text-muted">Loading meetings…</p>}>
+      <Dashboard />
+    </Suspense>
+  );
 }

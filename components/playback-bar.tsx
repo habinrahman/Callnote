@@ -13,21 +13,25 @@ function bars(seed: string): number[] {
 
 export function PlaybackBar({
   seed,
+  label,
   time,
   start,
   end,
   playing,
   rate,
+  marks = [],
   onToggle,
   onSeek,
   onRate,
 }: {
   seed: string;
+  label: string;
   time: number;
   start: number;
   end: number;
   playing: boolean;
   rate: number;
+  marks?: { at: number; label: string }[];
   onToggle: () => void;
   onSeek: (seconds: number) => void;
   onRate: (rate: number) => void;
@@ -39,7 +43,7 @@ export function PlaybackBar({
   return (
     <section className="rounded-lg border border-line bg-[#241f1b] p-4 text-[#f6f1e8]" aria-label="Recording">
       <div className="mb-3 flex items-center justify-between gap-3 text-xs text-[#c9bfb2]">
-        <span>Demo recording</span>
+        <span>{label}</span>
         <span className="tabular-nums">
           {formatClock(time)} / {formatClock(end)}
         </span>
@@ -56,7 +60,28 @@ export function PlaybackBar({
           );
         })}
       </div>
-      <label className="mt-3 block">
+      {marks.length > 0 ? (
+        <div className="relative mt-2 h-6">
+          {marks.map((mark) => {
+            const left = Math.min(100, Math.max(0, ((mark.at - start) / span) * 100));
+            return (
+              <button
+                key={`${mark.label}-${mark.at}`}
+                type="button"
+                title={mark.label}
+                onClick={() => onSeek(mark.at)}
+                className="absolute top-1 h-3 w-3 -translate-x-1/2 rounded-full bg-[#f3e2b5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8fd0c2]"
+                style={{ left: `${left}%` }}
+              >
+                <span className="sr-only">
+                  {mark.label} at {formatClock(mark.at)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+      <label className="mt-1 block">
         <span className="sr-only">Seek</span>
         <input
           type="range"

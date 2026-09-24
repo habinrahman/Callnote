@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { formatClock, formatWhen } from "@/lib/domain/format";
+import { formatClock, formatWhen, nextPlayhead } from "@/lib/domain/format";
 import type { ClipView } from "@/lib/domain/types";
 import { BackHome, speakerName } from "@/components/bits";
 import { PlaybackBar } from "@/components/playback-bar";
@@ -31,7 +31,7 @@ export function ShareView({ view }: { view: ClipView }) {
     const loop = (now: number) => {
       const delta = ((now - last) / 1000) * rateRef.current;
       last = now;
-      const next = Math.min(clip.endSec, timeRef.current + delta);
+      const next = nextPlayhead(timeRef.current, delta, view.segments, clip.endSec);
       timeRef.current = next;
       setTime(next);
       if (next >= clip.endSec) {
@@ -54,7 +54,7 @@ export function ShareView({ view }: { view: ClipView }) {
   return (
     <div>
       <BackHome />
-      <p className="mt-3 text-xs font-medium uppercase tracking-wide text-pine">Shared clip · no account needed</p>
+      <p className="mt-3 text-xs font-medium uppercase tracking-wide text-pine">Shared clip</p>
       <h1 className="mt-1 text-2xl font-semibold tracking-tight">{clip.title}</h1>
       <p className="mt-2 text-sm text-muted">
         From {view.meetingTitle} · {formatWhen(view.startedAt)}
@@ -69,6 +69,7 @@ export function ShareView({ view }: { view: ClipView }) {
         <div>
           <PlaybackBar
             seed={clip.id}
+            label="Recording"
             time={time}
             start={clip.startSec}
             end={clip.endSec}

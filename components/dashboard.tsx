@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
-import { formatDay, formatDuration, formatWhen } from "@/lib/domain/format";
+import { useSearchParams } from "next/navigation";
+import { formatClock, formatDay, formatDuration, formatWhen } from "@/lib/domain/format";
 import { listMeetings, searchMeetings } from "@/lib/domain/queries";
 import type { MeetingSummary, SearchHit } from "@/lib/domain/types";
 import { MarkedText } from "@/components/bits";
@@ -19,14 +22,20 @@ function MeetingRow({ meeting }: { meeting: MeetingSummary }) {
         <p className="mt-1 text-sm text-muted">
           {formatDuration(meeting.durationSec)} · {meeting.participants.join(", ")}
         </p>
-        <p className="mt-2 text-sm leading-5">{meeting.preview}</p>
-        <p className="mt-2 text-xs text-muted">
-          {processing
-            ? "Processing"
-            : meeting.openActionCount === 0
-              ? `${meeting.actionCount} actions, all done`
-              : `${meeting.openActionCount} open of ${meeting.actionCount} actions`}
-        </p>
+        {processing ? (
+          <p className="mt-3 inline-block rounded-full bg-[#f3e6cf] px-2 py-0.5 text-xs font-medium text-amber">
+            Processing
+          </p>
+        ) : (
+          <>
+            <p className="mt-2 text-sm leading-5">{meeting.preview}</p>
+            <p className="mt-3 text-xs font-medium text-pine">
+              {meeting.openActionCount === 0
+                ? "Actions done"
+                : `${meeting.openActionCount} open action${meeting.openActionCount === 1 ? "" : "s"}`}
+            </p>
+          </>
+        )}
       </Link>
     </li>
   );
@@ -66,7 +75,10 @@ function SearchResults({ query, hits }: { query: string; hits: SearchHit[] }) {
               }
               className="block rounded-lg border border-line bg-card px-4 py-3 hover:border-pine focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine"
             >
-              <span className="text-xs uppercase tracking-wide text-muted">{hit.kind}</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-muted">
+                {hit.kind === "transcript" ? "Said" : hit.kind === "action" ? "Action" : hit.kind === "summary" ? "Summary" : "Title"}
+                {hit.timestampSec !== null ? ` · ${formatClock(hit.timestampSec)}` : ""}
+              </span>
               <span className="mt-1 block font-medium">{hit.title}</span>
               <span className="mt-1 block text-sm leading-5 text-ink">
                 <MarkedText text={hit.snippet} query={query} />
@@ -79,7 +91,8 @@ function SearchResults({ query, hits }: { query: string; hits: SearchHit[] }) {
   );
 }
 
-export function Dashboard({ query }: { query: string }) {
+export function Dashboard() {
+  const query = useSearchParams().get("q") ?? "";
   if (query.trim()) {
     return <SearchResults query={query.trim()} hits={searchMeetings(query)} />;
   }
@@ -94,9 +107,6 @@ export function Dashboard({ query }: { query: string }) {
   return (
     <div>
       <h1 className="text-2xl font-semibold tracking-tight">Meetings</h1>
-      <p className="mt-2 max-w-xl text-sm leading-6 text-muted">
-        Recent calls, with the summary up front and the open actions counted.
-      </p>
       <div className="mt-6 space-y-8">
         {[...groups.entries()].map(([day, items]) => (
           <section key={day}>
