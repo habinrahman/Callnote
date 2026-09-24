@@ -1,55 +1,30 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { formatClock, formatWhen, nextPlayhead } from "@/lib/domain/format";
+import { formatClock, formatWhen } from "@/lib/domain/format";
 import type { ClipView } from "@/lib/domain/types";
+import { northwindDemo } from "@/lib/audio/northwind-demo";
 import { speakerName } from "@/components/bits";
 import { PlaybackBar } from "@/components/playback-bar";
 import { TranscriptPane } from "@/components/transcript-pane";
+import { usePlayback } from "@/components/use-playback";
 
 export function ShareView({ view }: { view: ClipView }) {
   const { clip } = view;
-  const [time, setTime] = useState(clip.startSec);
-  const [playing, setPlaying] = useState(false);
-  const [rate, setRate] = useState(1);
+  const demo = view.meetingId === "northwind-renewal" ? northwindDemo : null;
+  const cues = demo
+    ? demo.cues.filter((cue) => cue.meetingEnd > clip.startSec && cue.meetingStart < clip.endSec)
+    : [];
+  const { time, playing, rate, audioStatus, setPlaying, setRate, seek } = usePlayback({
+    segments: view.segments,
+    start: clip.startSec,
+    end: clip.endSec,
+    initialTime: clip.startSec,
+    src: demo?.src,
+    cues: [...cues],
+  });
   const [query, setQuery] = useState("");
-  const timeRef = useRef(clip.startSec);
-  const rateRef = useRef(1);
-
-  useEffect(() => {
-    timeRef.current = time;
-  }, [time]);
-  useEffect(() => {
-    rateRef.current = rate;
-  }, [rate]);
-
-  useEffect(() => {
-    if (!playing) return;
-    let frame = 0;
-    let last = performance.now();
-    const loop = (now: number) => {
-      const delta = ((now - last) / 1000) * rateRef.current;
-      last = now;
-      const next = nextPlayhead(timeRef.current, delta, view.segments, clip.endSec);
-      timeRef.current = next;
-      setTime(next);
-      if (next >= clip.endSec) {
-        setPlaying(false);
-        return;
-      }
-      frame = requestAnimationFrame(loop);
-    };
-    frame = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(frame);
-  }, [playing, clip.endSec]);
-
-  function seek(seconds: number) {
-    const next = Math.min(clip.endSec, Math.max(clip.startSec, seconds));
-    timeRef.current = next;
-    setTime(next);
-    setPlaying(true);
-  }
 
   return (
     <div>
@@ -77,7 +52,19 @@ export function ShareView({ view }: { view: ClipView }) {
             onToggle={() => setPlaying((value) => !value)}
             onSeek={seek}
             onRate={setRate}
+            status={
+              audioStatus === "loading"
+                ? "Loading audio"
+                : audioStatus === "unavailable"
+                  ? "Audio unavailable"
+                  : audioStatus === "ended"
+                    ? "End of demo audio"
+                    : undefined
+            }
           />
+          {demo && audioStatus !== "unavailable" ? (
+            <p className="mt-2 text-xs text-muted">Demo audio of what was said in this moment. It is not a full meeting recording.</p>
+          ) : null}
           <p className="mt-4 text-sm leading-6 text-muted">
             {speakerName(view.speakers, view.segments[0]?.speakerId ?? "")} and others,{" "}
             {formatClock(clip.startSec)}–{formatClock(clip.endSec)}.

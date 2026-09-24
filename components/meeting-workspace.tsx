@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { formatClock, formatDue, formatDuration, formatWhen, nextPlayhead } from "@/lib/domain/format";
+import { formatClock, formatDue, formatDuration, formatWhen } from "@/lib/domain/format";
 import type { Meeting } from "@/lib/domain/types";
+import { northwindDemo } from "@/lib/audio/northwind-demo";
 import { BackHome, speakerName, TimeButton } from "@/components/bits";
 import { PlaybackBar } from "@/components/playback-bar";
 import { TranscriptPane } from "@/components/transcript-pane";
+import { usePlayback } from "@/components/use-playback";
 
 function storageKey(meetingId: string): string {
   return `fanthom-actions-${meetingId}`;
@@ -16,54 +18,28 @@ function storageKey(meetingId: string): string {
 export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; initialTime: number }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [time, setTime] = useState(initialTime);
-  const [playing, setPlaying] = useState(false);
-  const [rate, setRate] = useState(1);
+  const demo = meeting.id === "northwind-renewal" ? northwindDemo : null;
+  const { time, playing, rate, audioStatus, setPlaying, setRate, seek: seekClock, park } = usePlayback({
+    segments: meeting.segments,
+    start: 0,
+    end: meeting.durationSec,
+    initialTime,
+    src: demo?.src,
+    cues: demo ? [...demo.cues] : [],
+  });
   const [templateId, setTemplateId] = useState(meeting.defaultTemplateId);
   const [transcriptQuery, setTranscriptQuery] = useState("");
   const [copied, setCopied] = useState("");
   const [doneIds, setDoneIds] = useState<string[] | null>(null);
-  const timeRef = useRef(initialTime);
-  const rateRef = useRef(1);
   const end = meeting.durationSec;
-
-  useEffect(() => {
-    timeRef.current = time;
-  }, [time]);
-
-  useEffect(() => {
-    rateRef.current = rate;
-  }, [rate]);
-
-  useEffect(() => {
-    if (!playing) return;
-    let frame = 0;
-    let last = performance.now();
-    const loop = (now: number) => {
-      const delta = ((now - last) / 1000) * rateRef.current;
-      last = now;
-      const next = nextPlayhead(timeRef.current, delta, meeting.segments, end);
-      timeRef.current = next;
-      setTime(next);
-      if (next >= end) {
-        setPlaying(false);
-        return;
-      }
-      frame = requestAnimationFrame(loop);
-    };
-    frame = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(frame);
-  }, [playing, end]);
 
   useEffect(() => {
     const raw = new URLSearchParams(window.location.search).get("t");
     if (!raw) return;
     const next = Number(raw);
     if (!Number.isFinite(next)) return;
-    const clamped = Math.min(end, Math.max(0, next));
-    timeRef.current = clamped;
-    setTime(clamped);
-  }, [end]);
+    park(next);
+  }, [end, park]);
 
   useEffect(() => {
     const raw = window.localStorage.getItem(storageKey(meeting.id));
@@ -89,10 +65,7 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
   }, []);
 
   function seek(seconds: number) {
-    const next = Math.min(end, Math.max(0, seconds));
-    timeRef.current = next;
-    setTime(next);
-    setPlaying(true);
+    const next = seekClock(seconds);
     router.replace(`${pathname}?t=${Math.floor(next)}`, { scroll: false });
   }
 
@@ -192,7 +165,21 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
             onToggle={() => setPlaying((value) => !value)}
             onSeek={seek}
             onRate={setRate}
+            status={
+              audioStatus === "loading"
+                ? "Loading audio"
+                : audioStatus === "unavailable"
+                  ? "Audio unavailable"
+                  : audioStatus === "ended"
+                    ? "End of demo audio"
+                    : undefined
+            }
           />
+          {demo && audioStatus !== "unavailable" ? (
+            <p className="mt-2 text-xs text-muted">
+              Demo audio of what was said. Silence between turns is not in the file, and this is not a recording of the full meeting.
+            </p>
+          ) : null}
         </div>
         <div className="order-2 lg:col-start-2 lg:row-span-3 lg:row-start-1">
           <TranscriptPane

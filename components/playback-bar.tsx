@@ -24,6 +24,7 @@ export function PlaybackBar({
   onToggle,
   onSeek,
   onRate,
+  status,
 }: {
   seed: string;
   label: string;
@@ -36,6 +37,7 @@ export function PlaybackBar({
   onToggle: () => void;
   onSeek: (seconds: number) => void;
   onRate: (rate: number) => void;
+  status?: string;
 }) {
   const span = Math.max(end - start, 0.1);
   const progress = Math.min(1, Math.max(0, (time - start) / span));
@@ -44,7 +46,14 @@ export function PlaybackBar({
   return (
     <section className="rounded-md border border-[#3a332c] bg-[#241f1b] px-4 py-3.5 text-[#f6f1e8] shadow-[var(--shadow-rest)]" aria-label="Recording">
       <div className="flex items-center justify-between gap-3 text-xs text-[#c9bfb2]">
-        <span>{label}</span>
+        <span className="flex min-w-0 items-center gap-2">
+          <span>{label}</span>
+          {status ? (
+            <span className="truncate" aria-live="polite">
+              {status}
+            </span>
+          ) : null}
+        </span>
         <span className="tabular-nums">
           {formatClock(time)} / {formatClock(end)}
         </span>
