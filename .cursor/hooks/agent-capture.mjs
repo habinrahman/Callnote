@@ -55,14 +55,12 @@ function repairTree(value) {
 }
 
 function readStdin() {
-  const chunks = [];
-  const buf = Buffer.alloc(64 * 1024);
+  // fs.readSync(0) returns 0 immediately on Windows when the hook pipe is not
+  // readable yet, so the event is dropped. readFileSync waits until Cursor
+  // closes stdin, which is how hook payloads are delivered.
+  let raw = "";
   try {
-    while (true) {
-      const n = fs.readSync(0, buf, 0, buf.length, null);
-      if (n === 0) break;
-      chunks.push(Buffer.from(buf.subarray(0, n)));
-    }
+    raw = fs.readFileSync(0, "utf8").trim();
   } catch (error) {
     try {
       fs.mkdirSync(STATE, { recursive: true });
@@ -72,7 +70,6 @@ function readStdin() {
     }
     return {};
   }
-  const raw = Buffer.concat(chunks).toString("utf8").trim();
   if (!raw) return {};
   try {
     return repairTree(JSON.parse(raw));
@@ -223,17 +220,56 @@ function onPrompt(input, state, sessionId) {
   state.pending = null;
 }
 
-function onResponse(input, state) {
-  const text = typeof input.text === "string" ? input.text : "";
+function responseText(input) {
+  if (typeof input.text === "string" && input.text.trim()) return input.text;
+  return textFromTranscript(input.transcript_path);
+}
+
+function textFromTranscript(transcriptPath) {
+  if (typeof transcriptPath !== "string" || !transcriptPath) return "";
+  let raw = "";
+  try {
+    raw = fs.readFileSync(transcriptPath, "utf8");
+  } catch {
+    return "";
+  }
+  let last = "";
+  for (const line of raw.split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    let row;
+    try {
+      row = JSON.parse(line);
+    } catch {
+      continue;
+    }
+    if (row.role !== "assistant") continue;
+    const parts = row.message?.content;
+    if (!Array.isArray(parts)) continue;
+    const text = parts
+      .filter((part) => part && part.type === "text" && typeof part.text === "string")
+      .map((part) => part.text)
+      .join("\n")
+      .trim();
+    if (text) last = text;
+  }
+  return last;
+}
+
+function onResponse(input, state, sessionId) {
+  const text = responseText(input);
   if (!text.trim() || !state.openPrompt) return;
   state.pending = { text, timestamp: nowIso(), model: modelOf(input) };
+  flushPending(state, sessionId, state.pending?.timestamp || nowIso());
 }
 
 function onStop(input, state, sessionId) {
   const timestamp = nowIso();
   if (state.openPrompt && !state.pending) {
+    const text = responseText(input);
     state.pending = {
-      text: "(no final response - the turn ended before the agent replied)",
+      text: text.trim()
+        ? text
+        : "(no final response - the turn ended before the agent replied)",
       timestamp,
       model: modelOf(input),
     };
@@ -248,7 +284,7 @@ function main() {
   const event = eventOf(input);
 
   if (event === "beforeSubmitPrompt" || event === "UserPromptSubmit") onPrompt(input, state, sessionId);
-  else if (event === "afterAgentResponse" || event === "AgentResponse") onResponse(input, state);
+  else if (event === "afterAgentResponse" || event === "AgentResponse") onResponse(input, state, sessionId);
   else if (event === "stop") onStop(input, state, sessionId);
 
   saveState(state);
