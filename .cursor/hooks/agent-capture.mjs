@@ -18,10 +18,37 @@ function nowIso() {
 }
 
 function readStdin() {
+  const chunks = [];
+  const buf = Buffer.alloc(64 * 1024);
   try {
-    const raw = fs.readFileSync(0, "utf8");
-    return raw ? JSON.parse(raw) : {};
-  } catch {
+    while (true) {
+      const n = fs.readSync(0, buf, 0, buf.length, null);
+      if (n === 0) break;
+      chunks.push(Buffer.from(buf.subarray(0, n)));
+    }
+  } catch (error) {
+    try {
+      fs.mkdirSync(STATE, { recursive: true });
+      fs.appendFileSync(path.join(STATE, "errors.log"), `${nowIso()} stdin ${error.stack}\n`);
+    } catch {
+      // never block the session
+    }
+    return {};
+  }
+  const raw = Buffer.concat(chunks).toString("utf8").trim();
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    try {
+      fs.mkdirSync(STATE, { recursive: true });
+      fs.appendFileSync(
+        path.join(STATE, "errors.log"),
+        `${nowIso()} json ${error.message} raw=${raw.slice(0, 500)}\n`,
+      );
+    } catch {
+      // never block the session
+    }
     return {};
   }
 }
