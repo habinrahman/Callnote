@@ -66,6 +66,7 @@ export function usePlayback({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const statusRef = useRef(audioStatus);
   const cuesRef = useRef(cues);
+  const pendingAudio = useRef<number | null>(null);
   const bounds = useRef({ start, end });
   bounds.current = { start, end };
   cuesRef.current = cues;
@@ -106,6 +107,7 @@ export function usePlayback({
     const audio = audioRef.current;
     if (!audio || audioStatus !== "ready") return;
     const onTime = () => {
+      if (pendingAudio.current !== null) return;
       const cue = cueAtAudio(cuesRef.current, audio.currentTime);
       if (!cue) {
         const last = cuesRef.current[cuesRef.current.length - 1];
@@ -198,7 +200,24 @@ export function usePlayback({
     const audio = audioRef.current;
     const cue = cueAtMeeting(cuesRef.current, next);
     if (audio && cue && statusRef.current !== "unavailable" && statusRef.current !== "off") {
-      audio.currentTime = audioTimeFromMeeting(cue, next);
+      const target = audioTimeFromMeeting(cue, next);
+      const place = () => {
+        if (!audio.seekable.length || audio.seekable.end(0) < target) return false;
+        pendingAudio.current = null;
+        audio.currentTime = target;
+        return true;
+      };
+      pendingAudio.current = target;
+      if (!place()) {
+        const wait = () => {
+          if (pendingAudio.current !== target) {
+            audio.removeEventListener("progress", wait);
+            return;
+          }
+          if (place()) audio.removeEventListener("progress", wait);
+        };
+        audio.addEventListener("progress", wait);
+      }
     }
     return next;
   }, []);

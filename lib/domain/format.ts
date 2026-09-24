@@ -11,6 +11,14 @@ export function formatClock(seconds: number): string {
 
 const timeZone = "UTC";
 
+export function formatTime(iso: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone,
+  }).format(new Date(iso));
+}
+
 export function formatWhen(iso: string): string {
   return new Intl.DateTimeFormat("en-US", {
     weekday: "short",

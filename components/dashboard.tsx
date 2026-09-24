@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { formatClock, formatDuration, formatWhen } from "@/lib/domain/format";
 import { listMeetings, searchMeetings } from "@/lib/domain/queries";
+import { listCaptured, type CapturedMeeting } from "@/lib/capture/db";
+import { searchCaptured } from "@/lib/capture/search";
 import type { MeetingSummary, SearchHit } from "@/lib/domain/types";
 import { MarkedText } from "@/components/bits";
 import { MeetingSearch } from "@/components/shell";
@@ -85,8 +87,9 @@ function MeetingRow({ meeting }: { meeting: MeetingSummary }) {
   );
 }
 
-function SearchResults({ query, hits }: { query: string; hits: SearchHit[] }) {
-  if (hits.length === 0) {
+function SearchResults({ query, hits, captured }: { query: string; hits: SearchHit[]; captured: CapturedMeeting[] }) {
+  const recorded = searchCaptured(captured, query);
+  if (hits.length === 0 && recorded.length === 0) {
     return (
       <div className="mt-6 rounded-md border border-dashed border-line bg-card px-4 py-10 text-center">
         <h1 className="font-serif text-2xl tracking-tight">Nothing mentions “{query}”</h1>
@@ -105,7 +108,7 @@ function SearchResults({ query, hits }: { query: string; hits: SearchHit[] }) {
     <div className="mt-6">
       <div className="flex items-baseline justify-between gap-3">
         <h1 className="font-serif text-2xl tracking-tight">
-          {hits.length} {hits.length === 1 ? "result" : "results"} for “{query}”
+          {hits.length + recorded.length} {hits.length + recorded.length === 1 ? "result" : "results"} for “{query}”
         </h1>
         <Link href="/" className="text-sm text-pine hover:underline">
           Clear
@@ -138,6 +141,24 @@ function SearchResults({ query, hits }: { query: string; hits: SearchHit[] }) {
           </section>
         ))}
       </div>
+      {recorded.length > 0 ? (
+        <section className="mt-6">
+          <h2 className="text-sm font-medium text-muted">Recorded in this browser</h2>
+          <ul className="mt-2 overflow-hidden rounded-md border border-line bg-card">
+            {recorded.map((hit) => (
+              <li key={hit.id} className="border-b border-line last:border-b-0">
+                <Link href={`/meetings/captured/?id=${hit.id}`} className="block px-4 py-3 hover:bg-sand/70">
+                  <span className="text-xs text-muted">{hit.kind}</span>
+                  <span className="mt-1 block text-sm font-medium">{hit.title}</span>
+                  <span className="mt-1 block text-sm leading-5">
+                    <MarkedText text={hit.snippet} query={query} />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </div>
   );
 }
@@ -145,9 +166,13 @@ function SearchResults({ query, hits }: { query: string; hits: SearchHit[] }) {
 export function Dashboard() {
   const query = useSearchParams().get("q") ?? "";
   const trimmed = query.trim();
+  const [captured, setCaptured] = useState<CapturedMeeting[]>([]);
   const [filter, setFilter] = useState<"all" | "ready" | "processing">("all");
   const [newest, setNewest] = useState(true);
   const meetings = listMeetings().filter((meeting) => (filter === "all" ? true : meeting.status === filter));
+  useEffect(() => {
+    void listCaptured().then(setCaptured).catch(() => setCaptured([]));
+  }, []);
   if (!newest) meetings.reverse();
   const groups = new Map<string, MeetingSummary[]>();
   for (const meeting of meetings) {
@@ -201,9 +226,24 @@ export function Dashboard() {
         )}
       </div>
       {trimmed ? (
-        <SearchResults query={trimmed} hits={searchMeetings(trimmed)} />
+        <SearchResults query={trimmed} hits={searchMeetings(trimmed)} captured={captured} />
       ) : (
         <div className="mt-8 space-y-8">
+          {captured.length > 0 ? (
+            <section>
+              <h2 className="text-[11px] font-medium tracking-[0.14em] text-muted">RECORDED HERE</h2>
+              <ul className="mt-3 space-y-3">
+                {captured.map((item) => (
+                  <li key={item.id}>
+                    <Link href={`/meetings/captured/?id=${item.id}`} className="block rounded-md border border-line bg-card px-4 py-4">
+                      <h2 className="text-[15px] font-semibold">{item.title}</h2>
+                      <p className="mt-1 text-xs text-muted">Saved in this browser · {Math.round(item.durationSec)} sec</p>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
           {[...groups.entries()].map(([day, items]) => (
             <section key={day}>
               <h2 className="text-[11px] font-medium tracking-[0.14em] text-muted">{day.toUpperCase()}</h2>

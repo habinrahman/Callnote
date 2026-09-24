@@ -2,6 +2,7 @@ import Link from "next/link";
 import { formatClock } from "@/lib/domain/format";
 import { meetings } from "@/lib/seed/meetings";
 import { speakerName } from "@/components/bits";
+import { CapturedHighlights } from "@/components/captured-highlights";
 
 export const metadata = { title: "Highlights" };
 
@@ -11,6 +12,7 @@ export default function HighlightsPage() {
     <div>
       <h1 className="font-serif text-[2rem] tracking-tight">Highlights</h1>
       <p className="mt-1 text-sm text-muted">Important moments extracted from your meetings.</p>
+      <CapturedHighlights />
       <div className="mt-8 space-y-8">
         {groups.map((meeting) => (
           <section key={meeting.id}>

@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatClock } from "@/lib/domain/format";
 import { searchMeetings } from "@/lib/domain/queries";
+import { listCaptured, type CapturedMeeting } from "@/lib/capture/db";
+import { searchCaptured } from "@/lib/capture/search";
 import type { SearchHit } from "@/lib/domain/types";
 import { MarkedText } from "@/components/bits";
 import { IconSearch } from "@/components/icons";
@@ -20,8 +22,13 @@ function hitMeta(hit: SearchHit) {
 export function SearchScreen() {
   const router = useRouter();
   const [value, setValue] = useState("");
+  const [captured, setCaptured] = useState<CapturedMeeting[]>([]);
+  useEffect(() => {
+    void listCaptured().then(setCaptured).catch(() => setCaptured([]));
+  }, []);
   const query = value.trim();
   const hits = query ? searchMeetings(query) : [];
+  const capturedHits = query ? searchCaptured(captured, query) : [];
   const groups = new Map<string, SearchHit[]>();
   for (const hit of hits) groups.set(hit.meetingId, [...(groups.get(hit.meetingId) ?? []), hit]);
 
@@ -50,7 +57,18 @@ export function SearchScreen() {
           />
         </div>
       </form>
-      {query && hits.length === 0 ? (
+      {capturedHits.length > 0 ? (
+        <ul className="mt-6 space-y-2">
+          {capturedHits.map((item) => (
+            <li key={item.id}>
+              <Link href={`/meetings/captured/?id=${item.id}`} className="text-sm text-pine hover:underline">
+                {item.title} · recorded in this browser
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {query && hits.length === 0 && capturedHits.length === 0 ? (
         <p className="mt-8 text-sm text-muted">Nothing mentions “{query}”.</p>
       ) : null}
       {hits.length > 0 ? (

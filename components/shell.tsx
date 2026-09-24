@@ -69,7 +69,8 @@ export function Shell({
   const onShare = pathname.startsWith("/share");
   const current = meetings.find((meeting) => pathname === `/meetings/${meeting.id}`);
   const shared = seeded.filter((meeting) => meeting.clips.length > 0);
-  const context = onSearch ? "Search" : onHighlights ? "Highlights" : current?.title ?? "Meetings";
+  const onCalendar = pathname === "/calendar" || pathname.startsWith("/calendar/");
+  const context = onSearch ? "Search" : onHighlights ? "Highlights" : onCalendar ? "Calendar" : current?.title ?? "Meetings";
 
   if (onShare) {
     return (
@@ -100,6 +101,9 @@ export function Shell({
         <nav className="px-3" aria-label="Primary">
           <NavLink href="/" current={onLibrary} icon="M2.5 3.5h4.2v4.2H2.5V3.5Zm6.8 0h4.2v4.2H9.3V3.5ZM2.5 10.3h4.2v4.2H2.5v-4.2Zm6.8 0h4.2v4.2H9.3v-4.2Z">
             Meetings
+          </NavLink>
+          <NavLink href="/calendar" current={pathname === "/calendar" || pathname.startsWith("/calendar/")} icon="M3 2.8v2.2M13 2.8v2.2M2.5 6.2h11M2.5 4.2h11v9.2h-11z">
+            Calendar
           </NavLink>
           <NavLink href="/search" current={onSearch} icon="M7 2.6a4.4 4.4 0 1 1 0 8.8 4.4 4.4 0 0 1 0-8.8ZM10.4 10.4 13.2 13.2">
             Search

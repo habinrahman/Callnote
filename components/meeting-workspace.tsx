@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { formatClock, formatDue, formatDuration, formatWhen } from "@/lib/domain/format";
+import { sectionsFor, structureFromTemplate, type StructureId } from "@/lib/intelligence/present";
 import type { Meeting } from "@/lib/domain/types";
 import { northwindDemo } from "@/lib/audio/northwind-demo";
 import { BackHome, speakerColor, speakerName, TimeButton } from "@/components/bits";
@@ -77,10 +78,10 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
   }
 
   async function copyLink(url: string, label: string) {
-    const absolute = new URL(url, window.location.origin).toString();
+    const absolute = new URL(url, window.location.href).toString();
+    setCopied(label);
     try {
       await navigator.clipboard.writeText(absolute);
-      setCopied(label);
     } catch {
       setCopied(absolute);
     }
@@ -200,7 +201,7 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
               <label className="shrink-0 text-sm text-muted">
                 <span className="sr-only">Template</span>
                 <select
-                  value={template.id}
+                  value={templateId}
                   onChange={(event) => setTemplateId(event.target.value)}
                   className="rounded-md border border-line bg-card px-2 py-1.5 text-sm text-ink"
                 >
@@ -209,9 +210,14 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
                       {item.name}
                     </option>
                   ))}
+                  <option value="sales">Sales</option>
+                  <option value="discovery">Customer discovery</option>
+                  <option value="interview">Interview</option>
                 </select>
               </label>
             </header>
+            {structureFromTemplate(templateId) === "general" ? (
+            <>
             <section className="border-t border-line px-4 py-4 sm:px-5">
             <h3 className="text-sm font-medium">Executive summary</h3>
             <p className="mt-1 text-sm leading-6 text-ink">{template.executiveSummary}</p>
@@ -286,6 +292,57 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
               ))}
             </ul>
             </section>
+            </>
+            ) : (
+              sectionsFor(structureFromTemplate(templateId) as StructureId).map((section) => (
+                <section key={section.id} className="border-t border-line px-4 py-4 sm:px-5">
+                  <h3 className="text-sm font-medium">{section.label}</h3>
+                  {section.kind === "prose" ? <p className="mt-2 text-sm leading-6">{template.executiveSummary}</p> : null}
+                  {section.kind === "points" ? (
+                    <ul className="mt-2 space-y-2">
+                      {meeting.decisions.map((item) => (
+                        <li key={item.id}>
+                          <TimeButton seconds={item.timestampSec} onSeek={seek}>{item.text}</TimeButton>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  {section.kind === "actions" ? (
+                    <ul className="mt-2 space-y-3">
+                      {meeting.actionItems.map((item) => {
+                        const done = completed(item.id, item.done);
+                        return (
+                          <li key={item.id} className="flex gap-3">
+                            <input type="checkbox" checked={done} onChange={() => toggleDone(item.id)} aria-label={`Mark complete: ${item.task}`} className="mt-1 accent-pine" />
+                            <div>
+                              <p className={done ? "text-sm text-muted line-through" : "text-sm"}>{item.task}</p>
+                              <p className="mt-1 text-xs text-muted">{item.owner}{item.dueDate ? ` · Due ${formatDue(item.dueDate)}` : ""}</p>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : null}
+                  {section.kind === "topics" ? (
+                    <ul className="mt-2 space-y-3">
+                      {meeting.topics.map((item) => (
+                        <li key={item.id}>
+                          <TimeButton seconds={item.timestampSec} onSeek={seek}>{item.label}</TimeButton>
+                          <p className="mt-1 text-sm leading-5 text-muted">{item.detail}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  {section.kind === "list" ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6">
+                      {template.followUps.map((line) => (
+                        <li key={line}>{line}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </section>
+              ))
+            )}
           </article>
         </div>
         <div className="order-4 space-y-6 lg:col-start-1">

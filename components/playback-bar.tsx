@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { formatClock } from "@/lib/domain/format";
 import { IconPause, IconPlay } from "@/components/icons";
 
@@ -42,6 +43,7 @@ export function PlaybackBar({
   const span = Math.max(end - start, 0.1);
   const progress = Math.min(1, Math.max(0, (time - start) / span));
   const waveform = bars(seed);
+  const sliding = useRef(false);
 
   return (
     <section className="rounded-md border border-[#3a332c] bg-[#241f1b] px-4 py-3.5 text-[#f6f1e8] shadow-[var(--shadow-rest)]" aria-label="Recording">
@@ -98,7 +100,22 @@ export function PlaybackBar({
           max={end}
           step={0.1}
           value={Math.min(end, Math.max(start, time))}
-          onChange={(event) => onSeek(Number(event.target.value))}
+          onPointerDown={() => {
+            sliding.current = true;
+          }}
+          onPointerUp={() => {
+            sliding.current = false;
+          }}
+          onKeyDown={() => {
+            sliding.current = true;
+          }}
+          onKeyUp={() => {
+            sliding.current = false;
+          }}
+          onChange={(event) => {
+            if (!sliding.current) return;
+            onSeek(Number(event.target.value));
+          }}
           className="w-full accent-[#8fd0c2]"
         />
       </label>
