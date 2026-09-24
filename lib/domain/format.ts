@@ -9,6 +9,8 @@ export function formatClock(seconds: number): string {
   return `${minutes}:${ss}`;
 }
 
+const timeZone = "UTC";
+
 export function formatWhen(iso: string): string {
   return new Intl.DateTimeFormat("en-US", {
     weekday: "short",
@@ -16,6 +18,7 @@ export function formatWhen(iso: string): string {
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    timeZone,
   }).format(new Date(iso));
 }
 
@@ -24,6 +27,7 @@ export function formatDay(iso: string): string {
     weekday: "long",
     month: "long",
     day: "numeric",
+    timeZone,
   }).format(new Date(iso));
 }
 
@@ -39,6 +43,7 @@ export function formatDue(iso: string): string {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
+    timeZone,
   }).format(new Date(iso));
 }
 
