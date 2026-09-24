@@ -48,7 +48,7 @@ Then, in another terminal, `DEMO_URL=http://127.0.0.1:3000 node scripts/verify-d
 
 ## Deployment
 
-GitHub Pages serves the static `out/` directory. The repository slug stays `Fanthom`, so the public site remains https://habinrahman.github.io/Fanthom/. That path uses the repository name’s exact case. `NEXT_PUBLIC_BASE_PATH` in the Pages workflow must match that case, or a direct meeting URL loads with no script and looks blank. Seeded meetings are part of the build. The product name on the site is Callnote.
+GitHub Pages serves the static `out/` directory at https://habinrahman.github.io/Callnote/. `NEXT_PUBLIC_BASE_PATH` in the Pages workflow is `/Callnote`, matching that path’s exact case. If it does not match, styles and scripts 404 and a direct meeting URL stays on the loading fallback. Seeded meetings are part of the build. The product name on the site is Callnote.
 
 ## Known limitations
 
