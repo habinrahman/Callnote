@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatClock, formatDue } from "@/lib/domain/format";
-import { getCaptured, type CapturedMeeting } from "@/lib/capture/db";
-import { sectionsFor, type StructureId } from "@/lib/intelligence/present";
+import { getCaptured, saveCaptured, type CapturedMeeting } from "@/lib/capture/db";
+import { sectionsFor, sliceSection, type StructureId } from "@/lib/intelligence/present";
 import { PlaybackBar } from "@/components/playback-bar";
 import { TranscriptPane } from "@/components/transcript-pane";
 
@@ -18,6 +18,7 @@ export function CapturedMeetingView({ id }: { id: string }) {
   const [structure, setStructure] = useState<StructureId>("general");
   const [query, setQuery] = useState("");
   const [doneIds, setDoneIds] = useState<string[]>([]);
+  const [highlightLabel, setHighlightLabel] = useState("");
 
   useEffect(() => {
     void getCaptured(id).then(setMeeting);
@@ -127,6 +128,7 @@ export function CapturedMeetingView({ id }: { id: string }) {
             </div>
             <select aria-label="Template" value={structure} onChange={(event) => setStructure(event.target.value as StructureId)} className="rounded-md border border-line bg-card px-2 py-1.5 text-sm">
               <option value="general">General</option>
+              <option value="incident">Incident review</option>
               <option value="sales">Sales</option>
               <option value="discovery">Customer discovery</option>
               <option value="interview">Interview</option>
@@ -138,7 +140,7 @@ export function CapturedMeetingView({ id }: { id: string }) {
               {section.kind === "prose" ? <p className="mt-2 text-sm leading-6">{meeting.notes.summary}</p> : null}
               {section.kind === "points" ? (
                 <ul className="mt-2 space-y-2 text-sm">
-                  {meeting.notes.decisions.map((item) => (
+                  {sliceSection(meeting.notes.decisions, section).map((item) => (
                     <li key={item.text}>
                       <button type="button" onClick={() => seek(item.timestampSec)} className="text-left hover:text-pine">
                         <span className="tabular-nums">{formatClock(item.timestampSec)}</span> · {item.text}
@@ -149,7 +151,7 @@ export function CapturedMeetingView({ id }: { id: string }) {
               ) : null}
               {section.kind === "actions" ? (
                 <ul className="mt-2 space-y-3 text-sm">
-                  {meeting.notes.actions.map((item, index) => {
+                  {sliceSection(meeting.notes.actions, section).map((item, index) => {
                     const actionId = `a${index}`;
                     const done = doneIds.includes(actionId);
                     return (
@@ -182,7 +184,7 @@ export function CapturedMeetingView({ id }: { id: string }) {
               ) : null}
               {section.kind === "topics" ? (
                 <ul className="mt-2 space-y-2 text-sm">
-                  {meeting.notes.topics.map((item) => (
+                  {sliceSection(meeting.notes.topics, section).map((item) => (
                     <li key={item.label}>
                       <button type="button" onClick={() => seek(item.timestampSec)} className="font-medium hover:text-pine">
                         {formatClock(item.timestampSec)} · {item.label}
@@ -192,9 +194,20 @@ export function CapturedMeetingView({ id }: { id: string }) {
                   ))}
                 </ul>
               ) : null}
+              {section.kind === "moments" ? (
+                <ul className="mt-2 space-y-2 text-sm">
+                  {sliceSection(meeting.lines, section).map((item) => (
+                    <li key={`${item.startSec}-${item.text}`}>
+                      <button type="button" onClick={() => seek(item.startSec)} className="text-left hover:text-pine">
+                        {formatClock(item.startSec)} · {item.speaker}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
               {section.kind === "list" ? (
                 <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
-                  {meeting.notes.followUps.map((line) => (
+                  {sliceSection(meeting.notes.followUps, section).map((line) => (
                     <li key={line}>{line}</li>
                   ))}
                 </ul>
@@ -205,6 +218,43 @@ export function CapturedMeetingView({ id }: { id: string }) {
       </div>
       <section className="mt-8" aria-label="Highlights">
         <h2 className="text-sm font-medium uppercase tracking-wide text-muted">Highlights</h2>
+        <p className="mt-1 text-xs text-muted">Saved in this browser only. They are not synced to other people.</p>
+        <form
+          className="mt-3 flex flex-wrap gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const label = highlightLabel.trim().slice(0, 72) || "Marked moment";
+            const line = [...meeting.lines].reverse().find((item) => item.startSec <= time);
+            const next = {
+              ...meeting,
+              highlights: [
+                ...meeting.highlights,
+                {
+                  id: `h-${meeting.highlights.length + 1}`,
+                  startSec: time,
+                  label,
+                  speaker: line?.speaker ?? "Speaker",
+                  excerpt: line?.text ?? "Marked during playback.",
+                },
+              ],
+            };
+            setMeeting(next);
+            setHighlightLabel("");
+            void saveCaptured(next);
+          }}
+        >
+          <input
+            value={highlightLabel}
+            onChange={(event) => setHighlightLabel(event.target.value)}
+            placeholder="Highlight title"
+            maxLength={72}
+            aria-label="Highlight title"
+            className="w-56 rounded-md border border-line bg-card px-2 py-1.5 text-sm"
+          />
+          <button type="submit" className="rounded-md border border-line bg-card px-3 py-1.5 text-sm">
+            Highlight at {formatClock(time)}
+          </button>
+        </form>
         <ul className="mt-3">
           {meeting.highlights.map((item) => (
             <li key={item.id}>

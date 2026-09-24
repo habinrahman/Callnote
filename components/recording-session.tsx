@@ -21,6 +21,7 @@ export function RecordingSession({ meeting, autoStart = false }: { meeting: Cale
   const [muted, setMuted] = useState(false);
   const [level, setLevel] = useState(0);
   const [highlights, setHighlights] = useState<CapturedHighlight[]>([]);
+  const [highlightLabel, setHighlightLabel] = useState("");
   const [notice, setNotice] = useState("");
   const started = useRef(0);
   const recorder = useRef<MediaRecorder | null>(null);
@@ -116,7 +117,8 @@ export function RecordingSession({ meeting, autoStart = false }: { meeting: Cale
   function mark() {
     const current = meeting.script.filter((line) => elapsedRef.current >= line.startSec);
     const line = current[current.length - 1];
-    const label = line ? line.text.split(". ")[0].slice(0, 72) : "Marked moment";
+    const typed = highlightLabel.trim().slice(0, 72);
+    const label = typed || (line ? line.text.split(". ")[0].slice(0, 72) : "Marked moment");
     const next = [
       ...highlightsRef.current,
       {
@@ -129,6 +131,7 @@ export function RecordingSession({ meeting, autoStart = false }: { meeting: Cale
     ];
     highlightsRef.current = next;
     setHighlights(next);
+    setHighlightLabel("");
     setNotice(`Highlight created · ${formatClock(elapsedRef.current)} · ${label}`);
   }
 
@@ -233,6 +236,14 @@ export function RecordingSession({ meeting, autoStart = false }: { meeting: Cale
           <button type="button" onClick={toggleMute} className="rounded-md border border-line bg-card px-3 py-1.5 text-sm">
             {muted ? "Unmute" : "Mute"}
           </button>
+          <input
+            value={highlightLabel}
+            onChange={(event) => setHighlightLabel(event.target.value)}
+            placeholder="Highlight title"
+            maxLength={72}
+            aria-label="Highlight title"
+            className="w-40 rounded-md border border-line bg-card px-2 py-1.5 text-sm"
+          />
           <button type="button" onClick={mark} className="rounded-md border border-line bg-card px-3 py-1.5 text-sm">
             Highlight moment
           </button>

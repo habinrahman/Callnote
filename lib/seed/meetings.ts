@@ -69,9 +69,16 @@ const reliabilityLines = [
   { speakerId: "sam", text: "I'll sit with Luis on the probe names so the status page uses the same words support uses." },
   { speakerId: "luis", text: "Use checkout, payments, and sign-in. Don't invent a fourth name in the doc and a fifth on the page." },
   { speakerId: "priya", text: "We're done. Timeline today, freeze in CI today, customers today, status page tomorrow. Friday we decide if the freeze lifts." },
+  { speakerId: "maya-ops", text: "Before the room drops, product ops needs the three renewal accounts Hannah is writing. I'll track which one gets a human reply instead of the macro." },
+  { speakerId: "daniel", text: "The ledger lock held a hot table for the whole window. I'll add a migration check that refuses a lock longer than two seconds in production." },
+  { speakerId: "luis", text: "Daniel, put that check next to the retry cap, in the same incident doc. I don't want two plans." },
+  { speakerId: "maya-ops", text: "I'll also note the status page stayed green for six minutes, so support is not blamed for a late public signal." },
+  { speakerId: "daniel", text: "The payment probe should page platform, not only SRE. Otherwise the next lock looks like a checkout bug again." },
+  { speakerId: "nora", text: "If platform gets that page, support still needs the same words on the ticket: checkout, payments, and sign-in." },
+  { speakerId: "priya", text: "Maya owns the renewal replies with Hannah. Daniel owns the lock check. Friday we decide whether the freeze lifts." },
 ];
 
-const reliabilitySegments = layOut("reliability-review", 48 * 60, reliabilityLines);
+const reliabilitySegments = layOut("reliability-review", 60 * 60, reliabilityLines);
 
 const helioLines = [
   { speakerId: "maya", text: "Devon, I'd rather spend this call on whether a pilot is even allowed inside Helio than on a feature tour." },
@@ -139,7 +146,7 @@ export const meetings: Meeting[] = [
     id: "reliability-review",
     title: "Checkout outage review",
     startedAt: "2026-09-23T13:00:00.000Z",
-    durationSec: 48 * 60,
+    durationSec: 60 * 60,
     status: "ready",
     speakers: [
       speaker("priya", "Priya Shah", "Engineering manager"),
@@ -148,6 +155,8 @@ export const meetings: Meeting[] = [
       speaker("evan", "Evan Cho", "Backend"),
       speaker("nora", "Nora Ibrahim", "Support"),
       speaker("sam", "Sam Wright", "Design"),
+      speaker("maya-ops", "Maya Chen", "Product operations"),
+      speaker("daniel", "Daniel Kim", "Platform engineer"),
     ],
     segments: reliabilitySegments,
     highlights: [

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { formatClock, formatDue, formatDuration, formatWhen } from "@/lib/domain/format";
-import { sectionsFor, structureFromTemplate, type StructureId } from "@/lib/intelligence/present";
+import { sectionsFor, sliceSection, structureFromTemplate, type PresentedSection } from "@/lib/intelligence/present";
 import type { Meeting } from "@/lib/domain/types";
 import { northwindDemo } from "@/lib/audio/northwind-demo";
 import { BackHome, speakerColor, speakerName, TimeButton } from "@/components/bits";
@@ -14,6 +14,105 @@ import { usePlayback } from "@/components/use-playback";
 
 function storageKey(meetingId: string): string {
   return `fanthom-actions-${meetingId}`;
+}
+
+function TemplateSection({
+  section,
+  summary,
+  followUps,
+  meeting,
+  completed,
+  onToggle,
+  onSeek,
+}: {
+  section: PresentedSection;
+  summary: string;
+  followUps: string[];
+  meeting: Meeting;
+  completed: (id: string, seeded: boolean) => boolean;
+  onToggle: (id: string) => void;
+  onSeek: (seconds: number) => void;
+}) {
+  const decisions = sliceSection(meeting.decisions, section);
+  const actions = sliceSection(meeting.actionItems, section);
+  const topics = sliceSection(meeting.topics, section);
+  const moments = sliceSection(meeting.moments, section);
+  const lines = sliceSection(followUps, section);
+  return (
+    <section className="border-t border-line px-4 py-4 sm:px-5">
+      <h3 className="text-sm font-medium">{section.label}</h3>
+      {section.kind === "prose" ? <p className="mt-1 text-sm leading-6 text-ink">{summary}</p> : null}
+      {section.kind === "points" ? (
+        <ul className="mt-2 space-y-2">
+          {decisions.map((item) => (
+            <li key={item.id}>
+              <TimeButton seconds={item.timestampSec} onSeek={onSeek}>
+                {item.text}
+              </TimeButton>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {section.kind === "actions" ? (
+        <ul className="mt-2 space-y-3">
+          {actions.map((item) => {
+            const done = completed(item.id, item.done);
+            return (
+              <li key={item.id} className="flex gap-3">
+                <input
+                  type="checkbox"
+                  checked={done}
+                  onChange={() => onToggle(item.id)}
+                  aria-label={`Mark complete: ${item.task}`}
+                  className="mt-1 accent-pine"
+                />
+                <div>
+                  <p className={done ? "text-sm text-muted line-through" : "text-sm"}>{item.task}</p>
+                  <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
+                    <span className="rounded bg-sand px-1.5 py-0.5 text-ink">{item.owner}</span>
+                    {item.dueDate ? <span>Due {formatDue(item.dueDate)}</span> : null}
+                    <button type="button" onClick={() => onSeek(item.timestampSec)} className="tabular-nums text-pine hover:underline">
+                      {formatClock(item.timestampSec)}
+                    </button>
+                  </p>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+      {section.kind === "topics" ? (
+        <ul className="mt-2 space-y-3">
+          {topics.map((item) => (
+            <li key={item.id}>
+              <TimeButton seconds={item.timestampSec} onSeek={onSeek}>
+                {item.label}
+              </TimeButton>
+              <p className="mt-1 text-sm leading-5 text-muted">{item.detail}</p>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {section.kind === "moments" ? (
+        <ul className="mt-2 space-y-2">
+          {moments.map((item) => (
+            <li key={item.id}>
+              <TimeButton seconds={item.timestampSec} onSeek={onSeek}>
+                {item.label}
+              </TimeButton>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {section.kind === "list" ? (
+        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6">
+          {lines.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      ) : null}
+    </section>
+  );
 }
 
 export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; initialTime: number }) {
@@ -212,139 +311,35 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
                       {item.name}
                     </option>
                   ))}
-                  <option value="sales">Sales</option>
-                  <option value="discovery">Customer discovery</option>
-                  <option value="interview">Interview</option>
+                  {(
+                    [
+                      ["incident", "Incident review"],
+                      ["sales", "Sales"],
+                      ["discovery", "Customer discovery"],
+                      ["interview", "Interview"],
+                    ] as const
+                  )
+                    .filter(([id]) => !meeting.templates.some((item) => item.id === id))
+                    .map(([id, name]) => (
+                      <option key={id} value={id}>
+                        {name}
+                      </option>
+                    ))}
                 </select>
               </label>
             </header>
-            {structureFromTemplate(templateId) === "general" ? (
-            <>
-            <section className="border-t border-line px-4 py-4 sm:px-5">
-            <h3 className="text-sm font-medium">Executive summary</h3>
-            <p className="mt-1 text-sm leading-6 text-ink">{template.executiveSummary}</p>
-
-            </section>
-            <section className="border-t border-line px-4 py-4 sm:px-5">
-            <h3 className="text-sm font-medium">Decisions</h3>
-            <ul className="mt-2 space-y-2">
-              {meeting.decisions.map((item) => (
-                <li key={item.id}>
-                  <TimeButton seconds={item.timestampSec} onSeek={seek}>
-                    {item.text}
-                  </TimeButton>
-                </li>
-              ))}
-            </ul>
-
-            </section>
-            <section className="border-t border-line px-4 py-4 sm:px-5">
-            <h3 className="text-sm font-medium">Action items</h3>
-            <ul className="mt-2 space-y-3">
-              {meeting.actionItems.map((item) => {
-                const done = completed(item.id, item.done);
-                return (
-                  <li key={item.id} className="flex gap-3">
-                    <input
-                      type="checkbox"
-                      checked={done}
-                      onChange={() => toggleDone(item.id)}
-                      aria-label={`Mark complete: ${item.task}`}
-                      className="mt-1 accent-pine"
-                    />
-                    <div>
-                      <p className={done ? "text-sm text-muted line-through" : "text-sm"}>{item.task}</p>
-                      <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
-                        <span className="rounded bg-sand px-1.5 py-0.5 text-ink">{item.owner}</span>
-                        {item.dueDate ? <span>Due {formatDue(item.dueDate)}</span> : null}
-                        <button
-                          type="button"
-                          onClick={() => seek(item.timestampSec)}
-                          className="tabular-nums text-pine hover:underline"
-                        >
-                          {formatClock(item.timestampSec)}
-                        </button>
-                      </p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-
-            </section>
-            <section className="border-t border-line px-4 py-4 sm:px-5">
-            <h3 className="text-sm font-medium">Key topics</h3>
-            <ul className="mt-2 space-y-3">
-              {meeting.topics.map((item) => (
-                <li key={item.id}>
-                  <TimeButton seconds={item.timestampSec} onSeek={seek}>
-                    {item.label}
-                  </TimeButton>
-                  <p className="mt-1 text-sm leading-5 text-muted">{item.detail}</p>
-                </li>
-              ))}
-            </ul>
-
-            </section>
-            <section className="border-t border-line px-4 py-4 sm:px-5">
-            <h3 className="text-sm font-medium">Follow-ups</h3>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6">
-              {template.followUps.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-            </section>
-            </>
-            ) : (
-              sectionsFor(structureFromTemplate(templateId) as StructureId).map((section) => (
-                <section key={section.id} className="border-t border-line px-4 py-4 sm:px-5">
-                  <h3 className="text-sm font-medium">{section.label}</h3>
-                  {section.kind === "prose" ? <p className="mt-2 text-sm leading-6">{template.executiveSummary}</p> : null}
-                  {section.kind === "points" ? (
-                    <ul className="mt-2 space-y-2">
-                      {meeting.decisions.map((item) => (
-                        <li key={item.id}>
-                          <TimeButton seconds={item.timestampSec} onSeek={seek}>{item.text}</TimeButton>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                  {section.kind === "actions" ? (
-                    <ul className="mt-2 space-y-3">
-                      {meeting.actionItems.map((item) => {
-                        const done = completed(item.id, item.done);
-                        return (
-                          <li key={item.id} className="flex gap-3">
-                            <input type="checkbox" checked={done} onChange={() => toggleDone(item.id)} aria-label={`Mark complete: ${item.task}`} className="mt-1 accent-pine" />
-                            <div>
-                              <p className={done ? "text-sm text-muted line-through" : "text-sm"}>{item.task}</p>
-                              <p className="mt-1 text-xs text-muted">{item.owner}{item.dueDate ? ` · Due ${formatDue(item.dueDate)}` : ""}</p>
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  ) : null}
-                  {section.kind === "topics" ? (
-                    <ul className="mt-2 space-y-3">
-                      {meeting.topics.map((item) => (
-                        <li key={item.id}>
-                          <TimeButton seconds={item.timestampSec} onSeek={seek}>{item.label}</TimeButton>
-                          <p className="mt-1 text-sm leading-5 text-muted">{item.detail}</p>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                  {section.kind === "list" ? (
-                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6">
-                      {template.followUps.map((line) => (
-                        <li key={line}>{line}</li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </section>
-              ))
-            )}
+            {sectionsFor(structureFromTemplate(templateId)).map((section) => (
+              <TemplateSection
+                key={section.id}
+                section={section}
+                summary={template.executiveSummary}
+                followUps={template.followUps}
+                meeting={meeting}
+                completed={completed}
+                onToggle={toggleDone}
+                onSeek={seek}
+              />
+            ))}
           </article>
         </div>
         <div className="order-4 space-y-6 lg:col-start-1">

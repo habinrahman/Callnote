@@ -42,7 +42,7 @@ export const calendarMeetings: CalendarMeeting[] = [
     id: "reliability-review",
     title: "Checkout outage review",
     startsAt: "2026-09-24T09:00:00.000Z",
-    durationMin: 48,
+    durationMin: 60,
     platform: "Google Meet",
     status: "ready",
     libraryHref: "/meetings/reliability-review/",

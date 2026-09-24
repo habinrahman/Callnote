@@ -26,7 +26,7 @@ await page.getByRole("heading", { name: "Meetings" }).waitFor();
 check("product name", (await page.getByRole("link", { name: "Callnote, all meetings" }).innerText()) === "Callnote");
 check("browser title", (await page.title()).includes("Callnote"));
 check("dashboard title", await page.getByRole("link", { name: /Checkout outage review/ }).first().isVisible());
-check("long meeting listed", await page.getByText("48 min").first().isVisible());
+check("long meeting listed", await page.getByText("1 hr").first().isVisible());
 check("processing meeting", await page.getByText("Processing").first().isVisible());
 
 await page.getByLabel("Search meetings").fill("error budget");
