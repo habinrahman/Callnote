@@ -78,7 +78,9 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
   }
 
   async function copyLink(url: string, label: string) {
-    const absolute = new URL(url, window.location.href).toString();
+    const base = process.env.NEXT_PUBLIC_BASE_PATH || "";
+    const path = url.startsWith("/") ? url : `/${url}`;
+    const absolute = new URL(`${base}${path}`, window.location.origin).toString();
     setCopied(label);
     try {
       await navigator.clipboard.writeText(absolute);
