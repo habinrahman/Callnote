@@ -48,9 +48,7 @@ Then, in another terminal, `DEMO_URL=http://127.0.0.1:3000 node scripts/verify-d
 
 ## Deployment
 
-GitHub Pages serves the static `out/` directory from this repository. The site is public. Seeded meetings are part of the build, so a new visitor sees them immediately.
-
-`NEXT_PUBLIC_BASE_PATH` is set in the Pages workflow when the site is served from a project subpath.
+GitHub Pages serves the static `out/` directory. The public site is https://habinrahman.github.io/Fanthom/ — the path uses the repository name’s exact case. `NEXT_PUBLIC_BASE_PATH` in the Pages workflow must match that case, or a direct meeting URL loads with no script and looks blank. Seeded meetings are part of the build.
 
 ## Known limitations
 

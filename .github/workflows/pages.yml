@@ -28,7 +28,7 @@ jobs:
       - run: npm ci
       - run: npm run build
         env:
-          NEXT_PUBLIC_BASE_PATH: /fanthom
+          NEXT_PUBLIC_BASE_PATH: /Fanthom
       - uses: actions/upload-pages-artifact@v3
         with:
           path: out

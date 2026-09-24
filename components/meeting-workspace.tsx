@@ -178,7 +178,7 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
       {copied ? <p className="mt-2 text-sm text-pine">{copied}</p> : null}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(300px,400px)]">
-        <div className="order-1 space-y-6 lg:col-start-1">
+        <div className="order-1 lg:col-start-1">
           <PlaybackBar
             seed={meeting.id}
             label="Recording"
@@ -192,60 +192,23 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
             onSeek={seek}
             onRate={setRate}
           />
-
-          <section aria-label="Highlights">
-            <h2 className="text-sm font-medium uppercase tracking-wide text-muted">Highlights</h2>
-            <ul className="mt-2 space-y-2">
-              {meeting.highlights.map((highlight) => (
-                <li key={highlight.id}>
-                  <button
-                    type="button"
-                    onClick={() => seek(highlight.startSec)}
-                    className="w-full rounded-lg border border-line bg-card px-3 py-3 text-left hover:border-pine focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine"
-                  >
-                    <span className="flex items-baseline justify-between gap-3">
-                      <span className="font-medium">{highlight.label}</span>
-                      <span className="text-xs tabular-nums text-muted">{formatClock(highlight.startSec)}</span>
-                    </span>
-                    <span className="mt-1 block text-xs text-muted">
-                      {speakerName(meeting.speakers, highlight.speakerId)}
-                    </span>
-                    <span className="mt-1 block text-sm leading-5">{highlight.excerpt}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-
         </div>
-        <div className="order-2 lg:col-start-2 lg:row-span-2">
-        <TranscriptPane
-          speakers={meeting.speakers}
-          segments={meeting.segments}
-          time={time}
-          query={transcriptQuery}
-          onQuery={setTranscriptQuery}
-          onSeek={seek}
-        />
+        <div className="order-2 lg:col-start-2 lg:row-span-3 lg:row-start-1">
+          <TranscriptPane
+            speakers={meeting.speakers}
+            segments={meeting.segments}
+            time={time}
+            query={transcriptQuery}
+            onQuery={setTranscriptQuery}
+            onSeek={seek}
+          />
         </div>
-        <div className="order-3 space-y-6 lg:col-start-1">
+        <div className="order-3 lg:col-start-1">
           <article className="rounded-lg border border-line bg-card p-4 sm:p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted">{template.name}</p>
             <h2 className="mt-2 text-xl font-semibold leading-snug">{template.headline}</h2>
             <h3 className="mt-5 text-sm font-medium">Executive summary</h3>
             <p className="mt-1 text-sm leading-6 text-ink">{template.executiveSummary}</p>
-
-            <h3 className="mt-5 text-sm font-medium">Key topics</h3>
-            <ul className="mt-2 space-y-3">
-              {meeting.topics.map((item) => (
-                <li key={item.id}>
-                  <TimeButton seconds={item.timestampSec} onSeek={seek}>
-                    {item.label}
-                  </TimeButton>
-                  <p className="mt-1 text-sm leading-5 text-muted">{item.detail}</p>
-                </li>
-              ))}
-            </ul>
 
             <h3 className="mt-5 text-sm font-medium">Decisions</h3>
             <ul className="mt-2 space-y-2">
@@ -290,6 +253,18 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
               })}
             </ul>
 
+            <h3 className="mt-5 text-sm font-medium">Key topics</h3>
+            <ul className="mt-2 space-y-3">
+              {meeting.topics.map((item) => (
+                <li key={item.id}>
+                  <TimeButton seconds={item.timestampSec} onSeek={seek}>
+                    {item.label}
+                  </TimeButton>
+                  <p className="mt-1 text-sm leading-5 text-muted">{item.detail}</p>
+                </li>
+              ))}
+            </ul>
+
             <h3 className="mt-5 text-sm font-medium">Follow-ups</h3>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6">
               {template.followUps.map((line) => (
@@ -297,7 +272,34 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
               ))}
             </ul>
 
-            <h3 className="mt-5 text-sm font-medium">Important moments</h3>
+          </article>
+        </div>
+        <div className="order-4 space-y-6 lg:col-start-1">
+          <section aria-label="Highlights">
+            <h2 className="text-sm font-medium uppercase tracking-wide text-muted">Highlights</h2>
+            <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+              {meeting.highlights.map((highlight) => (
+                <li key={highlight.id}>
+                  <button
+                    type="button"
+                    onClick={() => seek(highlight.startSec)}
+                    className="h-full w-full rounded-lg border border-line bg-card px-3 py-3 text-left hover:border-pine focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine"
+                  >
+                    <span className="flex items-baseline justify-between gap-3">
+                      <span className="font-medium">{highlight.label}</span>
+                      <span className="text-xs tabular-nums text-muted">{formatClock(highlight.startSec)}</span>
+                    </span>
+                    <span className="mt-1 block text-xs text-muted">
+                      {speakerName(meeting.speakers, highlight.speakerId)}
+                    </span>
+                    <span className="mt-1 block text-sm leading-5">{highlight.excerpt}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+          <section aria-label="Important moments">
+            <h2 className="text-sm font-medium uppercase tracking-wide text-muted">Important moments</h2>
             <ul className="mt-2 space-y-2">
               {meeting.moments.map((item) => (
                 <li key={item.id}>
@@ -308,7 +310,7 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
                 </li>
               ))}
             </ul>
-          </article>
+          </section>
         </div>
       </div>
     </div>
