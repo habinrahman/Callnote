@@ -1,16 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-sans: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --color-paper: #f3f0e8;
   --color-ink: #1c1915;
-  --color-muted: #6f685f;
-  --color-line: #e3dcd0;
+  --color-muted: #645e56;
+  --color-line: #e0d8cc;
   --color-card: #fffdf8;
-  --color-pine: #1d5c4d;
-  --color-pine-deep: #143f36;
-  --color-sand: #efe8db;
+  --color-pine: #1b5648;
+  --color-pine-deep: #123f35;
+  --color-sand: #efe6d8;
   --color-amber: #8a5a12;
+  --color-mark: #f3e4bc;
+  --radius-control: 6px;
+  --shadow-rest: 0 1px 0 rgb(28 25 21 / 0.04);
 }
 
 html {
@@ -21,10 +25,33 @@ html {
 body {
   min-height: 100vh;
   font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {
   background: #d5ebe4;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-pine);
+  outline-offset: 2px;
+}
+
+[data-active="true"] {
+  background: #e7f3ef;
+  box-shadow: inset 2px 0 0 var(--color-pine);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
 
 .sr-only {

@@ -79,6 +79,7 @@ export function searchMeetings(rawQuery: string): SearchHit[] {
         kind: "title",
         snippet: meeting.preview,
         timestampSec: null,
+        who: null,
       });
     }
     for (const template of meeting.templates) {
@@ -91,6 +92,7 @@ export function searchMeetings(rawQuery: string): SearchHit[] {
           kind: "summary",
           snippet: windowAround(template.executiveSummary, query),
           timestampSec: null,
+          who: null,
         });
         break;
       }
@@ -104,6 +106,7 @@ export function searchMeetings(rawQuery: string): SearchHit[] {
         kind: "action",
         snippet: item.task,
         timestampSec: item.timestampSec,
+        who: item.owner,
       });
     }
     let transcriptHits = 0;
@@ -116,6 +119,7 @@ export function searchMeetings(rawQuery: string): SearchHit[] {
         kind: "transcript",
         snippet: windowAround(segment.text, query),
         timestampSec: segment.startSec,
+        who: meeting.speakers.find((speaker) => speaker.id === segment.speakerId)?.name ?? null,
       });
       transcriptHits += 1;
       if (transcriptHits >= 3) break;

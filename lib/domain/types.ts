@@ -106,6 +106,7 @@ export type SearchHit = {
   kind: "title" | "summary" | "action" | "transcript";
   snippet: string;
   timestampSec: number | null;
+  who: string | null;
 };
 
 export type ClipView = {

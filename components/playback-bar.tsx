@@ -1,6 +1,7 @@
 "use client";
 
 import { formatClock } from "@/lib/domain/format";
+import { IconPause, IconPlay } from "@/components/icons";
 
 function bars(seed: string): number[] {
   let hash = 2166136261;
@@ -41,47 +42,46 @@ export function PlaybackBar({
   const waveform = bars(seed);
 
   return (
-    <section className="rounded-lg border border-line bg-[#241f1b] p-4 text-[#f6f1e8]" aria-label="Recording">
-      <div className="mb-3 flex items-center justify-between gap-3 text-xs text-[#c9bfb2]">
+    <section className="rounded-md border border-[#3a332c] bg-[#241f1b] px-4 py-3.5 text-[#f6f1e8] shadow-[var(--shadow-rest)]" aria-label="Recording">
+      <div className="flex items-center justify-between gap-3 text-xs text-[#c9bfb2]">
         <span>{label}</span>
         <span className="tabular-nums">
           {formatClock(time)} / {formatClock(end)}
         </span>
       </div>
-      <div className="flex h-16 items-end gap-[2px]" aria-hidden="true">
-        {waveform.map((height, index) => {
-          const played = index / waveform.length < progress;
-          return (
-            <span
-              key={index}
-              className={played ? "bg-[#8fd0c2]" : "bg-[#4a433c]"}
-              style={{ height: `${height}%`, width: "100%" }}
-            />
-          );
-        })}
-      </div>
-      {marks.length > 0 ? (
-        <div className="relative mt-2 h-6">
-          {marks.map((mark) => {
-            const left = Math.min(100, Math.max(0, ((mark.at - start) / span) * 100));
+      <div className="relative mt-3 h-14">
+        <div className="flex h-full items-end gap-px" aria-hidden="true">
+          {waveform.map((height, index) => {
+            const played = index / waveform.length < progress;
             return (
-              <button
-                key={`${mark.label}-${mark.at}`}
-                type="button"
-                title={mark.label}
-                onClick={() => onSeek(mark.at)}
-                className="absolute top-1 h-3 w-3 -translate-x-1/2 rounded-full bg-[#f3e2b5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8fd0c2]"
-                style={{ left: `${left}%` }}
-              >
-                <span className="sr-only">
-                  {mark.label} at {formatClock(mark.at)}
-                </span>
-              </button>
+              <span
+                key={index}
+                className={`min-w-0 flex-1 rounded-[1px] ${played ? "bg-[#8fd0c2]" : "bg-[#4a433c]"}`}
+                style={{ height: `${height}%` }}
+              />
             );
           })}
         </div>
-      ) : null}
-      <label className="mt-1 block">
+        {marks.map((mark) => {
+          const left = Math.min(100, Math.max(0, ((mark.at - start) / span) * 100));
+          return (
+            <button
+              key={`${mark.label}-${mark.at}`}
+              type="button"
+              title={mark.label}
+              onClick={() => onSeek(mark.at)}
+              className="absolute bottom-0 top-0 w-4 -translate-x-1/2"
+              style={{ left: `${left}%` }}
+            >
+              <span className="mx-auto block h-full w-px bg-[#f3e2b5]" />
+              <span className="sr-only">
+                {mark.label} at {formatClock(mark.at)}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <label className="mt-2 block">
         <span className="sr-only">Seek</span>
         <input
           type="range"
@@ -98,9 +98,10 @@ export function PlaybackBar({
           type="button"
           onClick={onToggle}
           aria-pressed={playing}
-          className="rounded-md bg-[#f6f1e8] px-3 py-1.5 text-sm font-medium text-[#241f1b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8fd0c2]"
+          aria-label={playing ? "Pause" : "Play"}
+          className="grid h-10 w-10 place-items-center rounded-full bg-[#f6f1e8] text-[#241f1b]"
         >
-          {playing ? "Pause" : "Play"}
+          {playing ? <IconPause /> : <IconPlay />}
         </button>
         <div className="ml-auto flex gap-1" role="group" aria-label="Playback speed">
           {[1, 4, 8].map((value) => (
@@ -109,8 +110,8 @@ export function PlaybackBar({
               type="button"
               aria-pressed={rate === value}
               onClick={() => onRate(value)}
-              className={`rounded px-2 py-1 text-xs tabular-nums focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8fd0c2] ${
-                rate === value ? "bg-[#8fd0c2] text-[#143f36]" : "text-[#c9bfb2]"
+              className={`rounded px-2 py-1 text-xs tabular-nums ${
+                rate === value ? "bg-[#8fd0c2] font-medium text-[#143f36]" : "text-[#c9bfb2] hover:text-[#f6f1e8]"
               }`}
             >
               {value}×

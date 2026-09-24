@@ -120,16 +120,17 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
   return (
     <div>
       <BackHome />
-      <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{meeting.title}</h1>
+      <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="font-serif text-3xl tracking-tight">{meeting.title}</h1>
           <p className="mt-2 text-sm text-muted">
             {formatWhen(meeting.startedAt)} · {formatDuration(meeting.durationSec)}
           </p>
-          <ul className="mt-2 flex flex-wrap gap-1.5">
+          <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
             {meeting.speakers.map((person) => (
-              <li key={person.id} className="rounded-full bg-sand px-2 py-0.5 text-xs text-ink">
-                {person.name}
+              <li key={person.id} className="text-sm">
+                <span className="font-medium">{person.name}</span>
+                <span className="text-muted"> · {person.role}</span>
               </li>
             ))}
           </ul>
@@ -140,7 +141,7 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
             <select
               value={template.id}
               onChange={(event) => setTemplateId(event.target.value)}
-              className="rounded-md border border-line bg-card px-2 py-1.5 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine"
+              className="rounded-md border border-line bg-card px-2 py-1.5 text-sm text-ink"
             >
               {meeting.templates.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -152,7 +153,7 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
           <button
             type="button"
             onClick={() => copyLink(`${pathname}?t=${Math.floor(time)}`, "Meeting link copied")}
-            className="rounded-md border border-line bg-card px-3 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine"
+            className="rounded-md border border-line bg-card px-3 py-1.5 text-sm hover:border-pine"
           >
             Copy link
           </button>
@@ -160,14 +161,14 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
             <>
               <Link
                 href={`/share/${clip.id}`}
-                className="rounded-md bg-pine px-3 py-1.5 text-sm text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine"
+                className="rounded-md bg-pine px-3 py-1.5 text-sm text-white hover:bg-pine-deep"
               >
                 Open shared clip
               </Link>
               <button
                 type="button"
                 onClick={() => copyLink(`/share/${clip.id}`, "Clip link copied")}
-                className="rounded-md border border-line bg-card px-3 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine"
+                className="rounded-md border border-line bg-card px-3 py-1.5 text-sm hover:border-pine"
               >
                 Copy clip link
               </button>
@@ -204,13 +205,18 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
           />
         </div>
         <div className="order-3 lg:col-start-1">
-          <article className="rounded-lg border border-line bg-card p-4 sm:p-5">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted">{template.name}</p>
-            <h2 className="mt-2 text-xl font-semibold leading-snug">{template.headline}</h2>
-            <h3 className="mt-5 text-sm font-medium">Executive summary</h3>
+          <article className="overflow-hidden rounded-md border border-line bg-card shadow-[var(--shadow-rest)]">
+            <header className="px-4 py-4 sm:px-5">
+              <p className="text-xs font-medium tracking-wide text-muted">{template.name}</p>
+              <h2 className="mt-1 font-serif text-xl leading-snug">{template.headline}</h2>
+            </header>
+            <section className="border-t border-line px-4 py-4 sm:px-5">
+            <h3 className="text-sm font-medium">Executive summary</h3>
             <p className="mt-1 text-sm leading-6 text-ink">{template.executiveSummary}</p>
 
-            <h3 className="mt-5 text-sm font-medium">Decisions</h3>
+            </section>
+            <section className="border-t border-line px-4 py-4 sm:px-5">
+            <h3 className="text-sm font-medium">Decisions</h3>
             <ul className="mt-2 space-y-2">
               {meeting.decisions.map((item) => (
                 <li key={item.id}>
@@ -221,7 +227,9 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
               ))}
             </ul>
 
-            <h3 className="mt-5 text-sm font-medium">Action items</h3>
+            </section>
+            <section className="border-t border-line px-4 py-4 sm:px-5">
+            <h3 className="text-sm font-medium">Action items</h3>
             <ul className="mt-2 space-y-3">
               {meeting.actionItems.map((item) => {
                 const done = completed(item.id, item.done);
@@ -242,7 +250,7 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
                         <button
                           type="button"
                           onClick={() => seek(item.timestampSec)}
-                          className="tabular-nums text-pine underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine"
+                          className="tabular-nums text-pine hover:underline"
                         >
                           {formatClock(item.timestampSec)}
                         </button>
@@ -253,7 +261,9 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
               })}
             </ul>
 
-            <h3 className="mt-5 text-sm font-medium">Key topics</h3>
+            </section>
+            <section className="border-t border-line px-4 py-4 sm:px-5">
+            <h3 className="text-sm font-medium">Key topics</h3>
             <ul className="mt-2 space-y-3">
               {meeting.topics.map((item) => (
                 <li key={item.id}>
@@ -265,25 +275,28 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
               ))}
             </ul>
 
-            <h3 className="mt-5 text-sm font-medium">Follow-ups</h3>
+            </section>
+            <section className="border-t border-line px-4 py-4 sm:px-5">
+            <h3 className="text-sm font-medium">Follow-ups</h3>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6">
               {template.followUps.map((line) => (
                 <li key={line}>{line}</li>
               ))}
             </ul>
-
+            </section>
           </article>
         </div>
         <div className="order-4 space-y-6 lg:col-start-1">
           <section aria-label="Highlights">
             <h2 className="text-sm font-medium uppercase tracking-wide text-muted">Highlights</h2>
-            <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+            <ol className="mt-3 border-l border-line">
               {meeting.highlights.map((highlight) => (
-                <li key={highlight.id}>
+                <li key={highlight.id} className="relative pl-4">
+                  <span className="absolute -left-[5px] top-3 h-2 w-2 rounded-full bg-pine" aria-hidden="true" />
                   <button
                     type="button"
                     onClick={() => seek(highlight.startSec)}
-                    className="h-full w-full rounded-lg border border-line bg-card px-3 py-3 text-left hover:border-pine focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine"
+                    className="w-full py-2 text-left hover:text-pine"
                   >
                     <span className="flex items-baseline justify-between gap-3">
                       <span className="font-medium">{highlight.label}</span>
@@ -296,7 +309,7 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
                   </button>
                 </li>
               ))}
-            </ul>
+            </ol>
           </section>
           <section aria-label="Important moments">
             <h2 className="text-sm font-medium uppercase tracking-wide text-muted">Important moments</h2>

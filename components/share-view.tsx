@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { formatClock, formatWhen, nextPlayhead } from "@/lib/domain/format";
 import type { ClipView } from "@/lib/domain/types";
-import { BackHome, speakerName } from "@/components/bits";
+import { speakerName } from "@/components/bits";
 import { PlaybackBar } from "@/components/playback-bar";
 import { TranscriptPane } from "@/components/transcript-pane";
 
@@ -53,15 +53,14 @@ export function ShareView({ view }: { view: ClipView }) {
 
   return (
     <div>
-      <BackHome />
-      <p className="mt-3 text-xs font-medium uppercase tracking-wide text-pine">Callnote clip</p>
-      <h1 className="mt-1 text-2xl font-semibold tracking-tight">{clip.title}</h1>
+      <p className="text-xs font-medium tracking-wide text-pine">Callnote clip</p>
+      <h1 className="mt-1 font-serif text-3xl tracking-tight">{clip.title}</h1>
       <p className="mt-2 text-sm text-muted">
         From {view.meetingTitle} · {formatWhen(view.startedAt)}
       </p>
       <p className="mt-3 max-w-2xl text-sm leading-6">{clip.note}</p>
       <p className="mt-2 text-sm">
-        <Link href={`/meetings/${view.meetingId}?t=${Math.floor(clip.startSec)}`} className="text-pine hover:underline">
+        <Link href={`/meetings/${view.meetingId}?t=${Math.floor(clip.startSec)}`} className="font-medium text-pine hover:underline">
           Open the full meeting at {formatClock(clip.startSec)}
         </Link>
       </p>

@@ -21,7 +21,7 @@ export function MarkedText({ text, query }: { text: string; query: string }) {
   return (
     <>
       {text.slice(0, at)}
-      <mark className="bg-[#f3e2b5] text-ink">{text.slice(at, at + needle.length)}</mark>
+      <mark className="rounded-sm bg-mark text-ink">{text.slice(at, at + needle.length)}</mark>
       {text.slice(at + needle.length)}
     </>
   );
@@ -40,7 +40,7 @@ export function TimeButton({
     <button
       type="button"
       onClick={() => onSeek(seconds)}
-      className="rounded text-left text-sm text-pine underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine"
+      className="rounded text-left text-sm leading-5 text-ink hover:text-pine"
     >
       <span className="tabular-nums">{formatClock(seconds)}</span>
       <span> · {children}</span>
@@ -51,7 +51,7 @@ export function TimeButton({
 export function BackHome() {
   return (
     <Link href="/" className="text-sm text-muted hover:text-ink">
-      All meetings
+      ← All meetings
     </Link>
   );
 }
