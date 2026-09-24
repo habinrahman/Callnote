@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { formatClock, formatDue, formatDuration, formatWhen } from "@/lib/domain/format";
 import type { Meeting } from "@/lib/domain/types";
 import { northwindDemo } from "@/lib/audio/northwind-demo";
-import { BackHome, speakerName, TimeButton } from "@/components/bits";
+import { BackHome, speakerColor, speakerName, TimeButton } from "@/components/bits";
 import { PlaybackBar } from "@/components/playback-bar";
 import { TranscriptPane } from "@/components/transcript-pane";
 import { usePlayback } from "@/components/use-playback";
@@ -95,34 +95,32 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
       <BackHome />
       <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="font-serif text-3xl tracking-tight">{meeting.title}</h1>
+          <h1 className="font-serif text-[2rem] tracking-tight">{meeting.title}</h1>
           <p className="mt-2 text-sm text-muted">
-            {formatWhen(meeting.startedAt)} · {formatDuration(meeting.durationSec)}
+            {formatWhen(meeting.startedAt)} · {formatDuration(meeting.durationSec)} · {meeting.speakers.length} participants
           </p>
-          <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+          <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
             {meeting.speakers.map((person) => (
-              <li key={person.id} className="text-sm">
-                <span className="font-medium">{person.name}</span>
-                <span className="text-muted"> · {person.role}</span>
+              <li key={person.id} className="flex items-center gap-2 text-sm">
+                <span
+                  className="grid h-7 w-7 place-items-center rounded-full text-[10px] font-medium text-white"
+                  style={{ background: speakerColor(meeting.speakers, person.id) }}
+                >
+                  {person.name
+                    .split(" ")
+                    .slice(0, 2)
+                    .map((part) => part[0])
+                    .join("")}
+                </span>
+                <span>
+                  <span className="font-medium">{person.name}</span>
+                  <span className="text-muted"> {person.role}</span>
+                </span>
               </li>
             ))}
           </ul>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <label className="flex items-center gap-2 text-sm text-muted">
-            <span>Template</span>
-            <select
-              value={template.id}
-              onChange={(event) => setTemplateId(event.target.value)}
-              className="rounded-md border border-line bg-card px-2 py-1.5 text-sm text-ink"
-            >
-              {meeting.templates.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
-          </label>
           <button
             type="button"
             onClick={() => copyLink(`${pathname}?t=${Math.floor(time)}`, "Meeting link copied")}
@@ -134,9 +132,10 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
             <>
               <Link
                 href={`/share/${clip.id}`}
+                aria-label="Open shared clip"
                 className="rounded-md bg-pine px-3 py-1.5 text-sm text-white hover:bg-pine-deep"
               >
-                Open shared clip
+                Share
               </Link>
               <button
                 type="button"
@@ -193,9 +192,25 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
         </div>
         <div className="order-3 lg:col-start-1">
           <article className="overflow-hidden rounded-md border border-line bg-card shadow-[var(--shadow-rest)]">
-            <header className="px-4 py-4 sm:px-5">
-              <p className="text-xs font-medium tracking-wide text-muted">{template.name}</p>
-              <h2 className="mt-1 font-serif text-xl leading-snug">{template.headline}</h2>
+            <header className="flex items-start justify-between gap-4 px-4 py-4 sm:px-5">
+              <div>
+                <p className="text-[11px] font-medium tracking-[0.14em] text-muted">{template.name.toUpperCase()}</p>
+                <h2 className="mt-2 font-serif text-2xl leading-snug">{template.headline}</h2>
+              </div>
+              <label className="shrink-0 text-sm text-muted">
+                <span className="sr-only">Template</span>
+                <select
+                  value={template.id}
+                  onChange={(event) => setTemplateId(event.target.value)}
+                  className="rounded-md border border-line bg-card px-2 py-1.5 text-sm text-ink"
+                >
+                  {meeting.templates.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </header>
             <section className="border-t border-line px-4 py-4 sm:px-5">
             <h3 className="text-sm font-medium">Executive summary</h3>

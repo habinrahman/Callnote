@@ -48,9 +48,13 @@ export default async function MeetingPage({ params }: { params: Promise<{ id: st
             </li>
           ))}
         </ul>
-        <div className="mt-6 max-w-xl rounded-md border border-line bg-card px-5 py-6 shadow-[var(--shadow-rest)]">
-          <p className="text-xs font-medium tracking-wide text-amber">Processing</p>
-          <p className="mt-2 text-sm leading-6">
+        <div className="mt-6 max-w-xl rounded-md border border-line bg-card px-5 py-6">
+          <p className="text-sm font-medium">Processing meeting…</p>
+          <ul className="mt-4 space-y-2 text-sm">
+            <li className="text-muted">Recording received</li>
+            <li>Preparing transcript and meeting insights</li>
+          </ul>
+          <p className="mt-4 text-sm leading-6 text-muted">
             The recording is in Callnote. The transcript, summary, and action items for this call are not in the demo yet.
           </p>
         </div>

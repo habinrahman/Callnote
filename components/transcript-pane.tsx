@@ -40,7 +40,7 @@ export function TranscriptPane({
     >
       <div className="border-b border-line px-3 py-3">
         <label htmlFor="transcript-search" className="mb-1.5 block text-xs font-medium tracking-wide text-muted">
-          Transcript
+          TRANSCRIPT
         </label>
         <input
           id="transcript-search"
