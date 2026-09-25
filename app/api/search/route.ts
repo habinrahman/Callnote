@@ -3,7 +3,7 @@ import { listStoredMeetings } from "@/lib/db";
 
 export const runtime = "nodejs";
 
-export function GET(request: Request) {
+export async function GET(request: Request) {
   const query = new URL(request.url).searchParams.get("q") ?? "";
-  return Response.json(searchMeetings(query, listStoredMeetings()));
+  return Response.json(searchMeetings(query, await listStoredMeetings()));
 }

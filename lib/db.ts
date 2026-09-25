@@ -1,62 +1,26 @@
-import fs from "node:fs";
-import path from "node:path";
-import { DatabaseSync } from "node:sqlite";
-import { meetings as seedMeetings } from "@/lib/seed/meetings";
+import "server-only";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Meeting, MeetingSummary } from "@/lib/domain/types";
 
-type CountRow = { n: number };
-type PayloadRow = { id: string; payload: string };
-type ActionRow = { meeting_id: string; action_id: string; done: number };
+type ActionRow = { meeting_id: string; action_id: string; done: boolean };
+type MeetingRow = { id: string; payload: Meeting };
 
-let database: DatabaseSync | null = null;
+let client: SupabaseClient | null = null;
 
-function file() {
-  const dir = path.join(process.cwd(), "data");
-  fs.mkdirSync(dir, { recursive: true });
-  return path.join(dir, "callnote.db");
-}
-
-function db() {
-  if (database) return database;
-  const opened = new DatabaseSync(file());
-  opened.exec(`
-    CREATE TABLE IF NOT EXISTS meetings (
-      id TEXT PRIMARY KEY,
-      payload TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS action_states (
-      meeting_id TEXT NOT NULL,
-      action_id TEXT NOT NULL,
-      done INTEGER NOT NULL,
-      PRIMARY KEY (meeting_id, action_id)
-    );
-  `);
-  const count = opened.prepare("SELECT COUNT(*) AS n FROM meetings").get() as CountRow;
-  if (count.n === 0) {
-    const insertMeeting = opened.prepare("INSERT INTO meetings (id, payload) VALUES (?, ?)");
-    const insertAction = opened.prepare(
-      "INSERT INTO action_states (meeting_id, action_id, done) VALUES (?, ?, ?)",
-    );
-    for (const meeting of seedMeetings) {
-      insertMeeting.run(meeting.id, JSON.stringify(meeting));
-      for (const action of meeting.actionItems) {
-        insertAction.run(meeting.id, action.id, action.done ? 1 : 0);
-      }
-    }
+function supabase() {
+  if (client) return client;
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SECRET_KEY;
+  if (!url || !key) {
+    throw new Error("SUPABASE_URL and SUPABASE_SECRET_KEY are required");
   }
-  database = opened;
-  return opened;
+  client = createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  return client;
 }
 
-function statesFor(meetingId: string) {
-  const rows = db()
-    .prepare("SELECT meeting_id, action_id, done FROM action_states WHERE meeting_id = ?")
-    .all(meetingId) as ActionRow[];
-  return new Map(rows.map((row) => [row.action_id, row.done === 1]));
-}
-
-function withActions(meeting: Meeting): Meeting {
-  const states = statesFor(meeting.id);
+function mergeActions(meeting: Meeting, states: Map<string, boolean>): Meeting {
   return {
     ...meeting,
     actionItems: meeting.actionItems.map((item) => ({
@@ -66,15 +30,37 @@ function withActions(meeting: Meeting): Meeting {
   };
 }
 
-export function listStoredMeetings(): Meeting[] {
-  const rows = db().prepare("SELECT id, payload FROM meetings").all() as PayloadRow[];
-  return rows.map((row) => withActions(JSON.parse(row.payload) as Meeting));
+async function statesFor(meetingIds: string[]) {
+  const map = new Map<string, Map<string, boolean>>();
+  if (meetingIds.length === 0) return map;
+  const { data, error } = await supabase()
+    .from("action_states")
+    .select("meeting_id, action_id, done")
+    .in("meeting_id", meetingIds);
+  if (error) throw new Error(error.message);
+  for (const row of (data ?? []) as ActionRow[]) {
+    const states = map.get(row.meeting_id) ?? new Map<string, boolean>();
+    states.set(row.action_id, row.done);
+    map.set(row.meeting_id, states);
+  }
+  return map;
 }
 
-export function getStoredMeeting(id: string): Meeting | null {
-  const row = db().prepare("SELECT id, payload FROM meetings WHERE id = ?").get(id) as PayloadRow | undefined;
-  if (!row) return null;
-  return withActions(JSON.parse(row.payload) as Meeting);
+export async function listStoredMeetings(): Promise<Meeting[]> {
+  const { data, error } = await supabase().from("meetings").select("id, payload");
+  if (error) throw new Error(error.message);
+  const rows = (data ?? []) as MeetingRow[];
+  const states = await statesFor(rows.map((row) => row.id));
+  return rows.map((row) => mergeActions(row.payload, states.get(row.id) ?? new Map()));
+}
+
+export async function getStoredMeeting(id: string): Promise<Meeting | null> {
+  const { data, error } = await supabase().from("meetings").select("id, payload").eq("id", id).maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+  const row = data as MeetingRow;
+  const states = await statesFor([row.id]);
+  return mergeActions(row.payload, states.get(row.id) ?? new Map());
 }
 
 export function summarize(meeting: Meeting): MeetingSummary {
@@ -93,14 +79,13 @@ export function summarize(meeting: Meeting): MeetingSummary {
   };
 }
 
-export function setActionDone(meetingId: string, actionId: string, done: boolean): Meeting | null {
-  const meeting = getStoredMeeting(meetingId);
+export async function setActionDone(meetingId: string, actionId: string, done: boolean): Promise<Meeting | null> {
+  const meeting = await getStoredMeeting(meetingId);
   if (!meeting || !meeting.actionItems.some((item) => item.id === actionId)) return null;
-  db()
-    .prepare(
-      `INSERT INTO action_states (meeting_id, action_id, done) VALUES (?, ?, ?)
-       ON CONFLICT(meeting_id, action_id) DO UPDATE SET done = excluded.done`,
-    )
-    .run(meetingId, actionId, done ? 1 : 0);
+  const { error } = await supabase().from("action_states").upsert(
+    { meeting_id: meetingId, action_id: actionId, done },
+    { onConflict: "meeting_id,action_id" },
+  );
+  if (error) throw new Error(error.message);
   return getStoredMeeting(meetingId);
 }

@@ -2,8 +2,8 @@ import { listStoredMeetings } from "@/lib/db";
 
 export const runtime = "nodejs";
 
-export function GET() {
-  const highlights = listStoredMeetings().flatMap((meeting) =>
+export async function GET() {
+  const highlights = (await listStoredMeetings()).flatMap((meeting) =>
     meeting.highlights.map((highlight) => ({
       ...highlight,
       meetingId: meeting.id,
