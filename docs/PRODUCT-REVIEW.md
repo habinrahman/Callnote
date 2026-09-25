@@ -1,6 +1,8 @@
 # Callnote — Senior Engineering & Product Review
 
-Reviewed against the repository at `491a1c124a9a681c9df46aa8eeb1aed210cc61ad` and the live site at https://habinrahman.github.io/Callnote/. This is an internal review. It is not a score.
+This note describes an earlier static GitHub Pages build. The current system is the Vercel app documented in the README. It is not a score for the current deployment.
+
+Reviewed against the repository at `491a1c124a9a681c9df46aa8eeb1aed210cc61ad` and the live site at https://habinrahman.github.io/Callnote/.
 
 ## Executive Summary
 
