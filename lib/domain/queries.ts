@@ -13,6 +13,7 @@ function toSummary(meeting: Meeting): MeetingSummary {
     preview: meeting.preview,
     openActionCount,
     actionCount: meeting.actionItems.length,
+    highlightCount: meeting.highlights.length,
   };
 }
 
@@ -64,12 +65,12 @@ function windowAround(text: string, needle: string): string {
   return `${prefix}${text.slice(start, end).trim()}${suffix}`;
 }
 
-export function searchMeetings(rawQuery: string): SearchHit[] {
+export function searchMeetings(rawQuery: string, source: Meeting[] = meetings): SearchHit[] {
   const query = rawQuery.trim().toLowerCase();
   if (!query) return [];
   const hits: SearchHit[] = [];
 
-  for (const meeting of meetings) {
+  for (const meeting of source) {
     if (meeting.status !== "ready") continue;
     if (includes(meeting.title, query)) {
       hits.push({

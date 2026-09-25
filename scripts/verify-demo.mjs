@@ -23,7 +23,8 @@ function check(name, ok) {
 
 await page.goto(base);
 await page.getByRole("heading", { name: "Meetings" }).waitFor();
-check("product name", (await page.getByRole("link", { name: "Callnote, all meetings" }).innerText()) === "Callnote");
+await page.getByRole("link", { name: /Checkout outage review/ }).first().waitFor();
+check("product name", (await page.getByRole("link", { name: "Callnote, all meetings" }).innerText()) === "CALLNOTE");
 check("browser title", (await page.title()).includes("Callnote"));
 check("dashboard title", await page.getByRole("link", { name: /Checkout outage review/ }).first().isVisible());
 check("long meeting listed", await page.getByText("1 hr").first().isVisible());
@@ -50,7 +51,7 @@ const action = page.getByRole("checkbox", { name: /Refresh the security question
 await action.check();
 check("action item", await action.isChecked());
 
-await page.getByPlaceholder("Find a line").fill("DPA");
+await page.getByPlaceholder("Find in transcript").fill("DPA");
 check("transcript filter", (await page.getByText(/lines/).textContent())?.includes("line"));
 
 const shareHref = await page.getByRole("link", { name: "Open shared clip" }).getAttribute("href");
@@ -68,7 +69,7 @@ await page.goto(`${base}/meetings/reliability-review/`);
 await page.getByRole("heading", { name: "Checkout outage review" }).waitFor();
 check("long meeting opens", await page.getByRole("button", { name: /Error budget spent/ }).filter({ hasText: "percent" }).isVisible());
 check("many speakers", await page.getByText("Nora Ibrahim").first().isVisible());
-check("recording label", await page.getByText("Recording", { exact: true }).first().isVisible());
+check("recording label", await page.getByText("Meeting recording", { exact: true }).first().isVisible());
 const transcriptBox = await page.getByRole("region", { name: "Transcript" }).boundingBox();
 const summaryBox = await page.getByRole("heading", { name: "Executive summary" }).boundingBox();
 check("phone transcript above summary", Boolean(transcriptBox && summaryBox && transcriptBox.y < summaryBox.y));

@@ -4,17 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { formatClock, formatDue, formatDuration, formatWhen } from "@/lib/domain/format";
+import { apiPath } from "@/lib/api-path";
 import { sectionsFor, sliceSection, structureFromTemplate, type PresentedSection } from "@/lib/intelligence/present";
 import type { Meeting } from "@/lib/domain/types";
 import { northwindDemo } from "@/lib/audio/northwind-demo";
-import { BackHome, speakerColor, speakerName, TimeButton } from "@/components/bits";
+import { speakerColor, speakerName, TimeButton } from "@/components/bits";
 import { PlaybackBar } from "@/components/playback-bar";
 import { TranscriptPane } from "@/components/transcript-pane";
 import { usePlayback } from "@/components/use-playback";
-
-function storageKey(meetingId: string): string {
-  return `fanthom-actions-${meetingId}`;
-}
 
 function TemplateSection({
   section,
@@ -142,15 +139,8 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
   }, [end, park]);
 
   useEffect(() => {
-    const raw = window.localStorage.getItem(storageKey(meeting.id));
-    if (!raw) return;
-    try {
-      const parsed = JSON.parse(raw) as string[];
-      if (Array.isArray(parsed)) setDoneIds(parsed);
-    } catch {
-      setDoneIds(null);
-    }
-  }, [meeting.id]);
+    setDoneIds(meeting.actionItems.filter((item) => item.done).map((item) => item.id));
+  }, [meeting]);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -171,9 +161,14 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
 
   function toggleDone(id: string) {
     const current = doneIds ?? meeting.actionItems.filter((item) => item.done).map((item) => item.id);
-    const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id];
+    const done = !current.includes(id);
+    const next = done ? [...current, id] : current.filter((item) => item !== id);
     setDoneIds(next);
-    window.localStorage.setItem(storageKey(meeting.id), JSON.stringify(next));
+    void fetch(apiPath(`/api/meetings/${meeting.id}/actions/${id}/`), {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ done }),
+    });
   }
 
   async function copyLink(url: string, label: string) {
@@ -194,10 +189,12 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
 
   return (
     <div>
-      <BackHome />
-      <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
+      <Link href="/" className="text-sm text-muted hover:text-ink">
+        Meetings
+      </Link>
+      <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="font-serif text-[2rem] tracking-tight">{meeting.title}</h1>
+          <h1 className="text-[28px] font-semibold tracking-tight">{meeting.title}</h1>
           <p className="mt-2 text-sm text-muted">
             {formatWhen(meeting.startedAt)} · {formatDuration(meeting.durationSec)} · {meeting.speakers.length} participants
           </p>
@@ -252,11 +249,11 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
       </div>
       {copied ? <p className="mt-2 text-sm text-pine">{copied}</p> : null}
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(300px,400px)]">
-        <div className="order-1 lg:col-start-1">
+      <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="order-1 space-y-6">
           <PlaybackBar
             seed={meeting.id}
-            label="Recording"
+            label="Meeting recording"
             time={time}
             start={0}
             end={end}
@@ -281,8 +278,6 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
               Demo audio of what was said. Silence between turns is not in the file, and this is not a recording of the full meeting.
             </p>
           ) : null}
-        </div>
-        <div className="order-2 lg:col-start-2 lg:row-span-3 lg:row-start-1">
           <TranscriptPane
             speakers={meeting.speakers}
             segments={meeting.segments}
@@ -292,12 +287,12 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
             onSeek={seek}
           />
         </div>
-        <div className="order-3 lg:col-start-1">
-          <article className="overflow-hidden rounded-md border border-line bg-card shadow-[var(--shadow-rest)]">
+        <aside className="order-2 space-y-6 lg:order-none">
+          <article>
             <header className="flex items-start justify-between gap-4 px-4 py-4 sm:px-5">
               <div>
                 <p className="text-[11px] font-medium tracking-[0.14em] text-muted">{template.name.toUpperCase()}</p>
-                <h2 className="mt-2 font-serif text-2xl leading-snug">{template.headline}</h2>
+                <h2 className="mt-2 text-lg font-semibold leading-snug">{template.headline}</h2>
               </div>
               <label className="shrink-0 text-sm text-muted">
                 <span className="sr-only">Template</span>
@@ -341,8 +336,7 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
               />
             ))}
           </article>
-        </div>
-        <div className="order-4 space-y-6 lg:col-start-1">
+          <div className="space-y-6">
           <section aria-label="Highlights">
             <h2 className="text-sm font-medium uppercase tracking-wide text-muted">Highlights</h2>
             <ol className="mt-3 border-l border-line">
@@ -380,7 +374,8 @@ export function MeetingWorkspace({ meeting, initialTime }: { meeting: Meeting; i
               ))}
             </ul>
           </section>
-        </div>
+          </div>
+        </aside>
       </div>
     </div>
   );

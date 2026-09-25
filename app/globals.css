@@ -2,36 +2,36 @@
 
 @theme {
   --font-sans: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-  --color-paper: #f3f0e8;
-  --color-ink: #1c1915;
-  --color-muted: #645e56;
-  --color-line: #e0d8cc;
-  --color-card: #fffdf8;
-  --color-pine: #1b5648;
-  --color-pine-deep: #123f35;
-  --color-sand: #efe6d8;
+  --font-serif: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --color-paper: #f7f6f3;
+  --color-ink: #1c1c1c;
+  --color-muted: #6f6a63;
+  --color-line: #e7e4de;
+  --color-card: #ffffff;
+  --color-pine: #1f7a4d;
+  --color-pine-deep: #17633e;
+  --color-sand: #eef3ef;
   --color-amber: #8a5a12;
   --color-mark: #f3e4bc;
-  --radius-control: 6px;
-  --shadow-rest: 0 1px 0 rgb(28 25 21 / 0.04);
+  --radius-control: 8px;
+  --shadow-rest: none;
 }
 
 html {
-  background: var(--color-paper);
+  background: #fbfbfa;
   color: var(--color-ink);
 }
 
 body {
   min-height: 100vh;
   font-family: var(--font-sans);
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.5;
   text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: #d5ebe4;
+  background: #d9eee4;
 }
 
 :focus-visible {
@@ -40,7 +40,7 @@ body {
 }
 
 [data-active="true"] {
-  background: #e7f3ef;
+  background: #eef6f1;
   box-shadow: inset 2px 0 0 var(--color-pine);
 }
 

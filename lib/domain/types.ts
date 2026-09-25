@@ -97,6 +97,7 @@ export type MeetingSummary = {
   preview: string;
   openActionCount: number;
   actionCount: number;
+  highlightCount: number;
 };
 
 export type SearchHit = {

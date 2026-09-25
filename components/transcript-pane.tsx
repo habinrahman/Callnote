@@ -35,7 +35,7 @@ export function TranscriptPane({
 
   return (
     <section
-      className="flex max-h-[50vh] min-h-[280px] flex-col overflow-hidden rounded-md border border-line bg-card shadow-[var(--shadow-rest)] lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:min-h-[420px]"
+      className="flex max-h-[70vh] min-h-[280px] flex-col overflow-hidden lg:max-h-[calc(100vh-8rem)]"
       aria-label="Transcript"
     >
       <div className="border-b border-line px-3 py-3">
@@ -46,7 +46,7 @@ export function TranscriptPane({
           id="transcript-search"
           value={query}
           onChange={(event) => onQuery(event.target.value)}
-          placeholder="Find a line"
+          placeholder="Find in transcript"
           className="w-full rounded-md border border-line bg-paper px-2.5 py-1.5 text-sm outline-none focus-visible:border-pine"
         />
         {needle ? (

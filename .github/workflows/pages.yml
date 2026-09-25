@@ -16,9 +16,6 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,11 +23,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npx tsc --noEmit
       - run: npm run build
         env:
           NEXT_PUBLIC_BASE_PATH: /Callnote
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: out
-      - id: deployment
-        uses: actions/deploy-pages@v4
