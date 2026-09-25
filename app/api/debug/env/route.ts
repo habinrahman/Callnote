@@ -8,5 +8,6 @@ export function GET() {
     supabaseSecretLength: process.env.SUPABASE_SECRET_KEY?.length ?? 0,
     nodeEnv: process.env.NODE_ENV ?? null,
     vercelEnv: process.env.VERCEL_ENV ?? null,
+    callnoteEnvTestPresent: Boolean(process.env.CALLNOTE_ENV_TEST),
   });
 }
